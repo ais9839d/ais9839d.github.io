@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>麥克諾尼 | 日式寵物沙龍</title>
+    <meta name="description" content="日式寵物美容、洗護專門店">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            bg: '#F9F4F0',       /* 韓系米白背景 */
+                            primary: '#C7B299',  /* 韓國奶茶色 (主色) */
+                            secondary: '#E6CCCA',/* 乾燥玫瑰粉 (點綴) */
+                            dark: '#8A7B70',     /* 深奶茶 (邊框/副標) */
+                            text: '#594A42',     /* 深焙咖啡 (文字) */
+                            light: '#9D816F',    /* 淺棕色 (說明文字) */
+                            surface: 'rgba(255, 255, 255, 0.65)' /* 磨砂玻璃背景 */
+                        },
+                    },
+                    fontFamily: {
+                        sans: ['Arial', 'Helvetica', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        body {
+            background-color: #F9F4F0;
+            color: #594A42;
+            font-family: Arial, Helvetica, sans-serif;
+            overflow-x: hidden;
+        }
+
+        /* 玻璃擬態卡片 */
+        .glass-card {
+            background-color: rgba(255, 255, 255, 0.4);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            border-radius: 1.5rem;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        }
+
+        /* 選項卡片樣式 */
+        .option-card {
+            cursor: pointer;
+            border: 1px solid rgba(199, 178, 153, 0.2); /* brand-primary/20 */
+            background-color: rgba(255, 255, 255, 0.4);
+            transition: all 0.2s;
+        }
+        
+        /* 選中狀態 (由 JS 控制 class) */
+        .option-card.selected {
+            background-color: #ffffff;
+            border-color: rgba(199, 178, 153, 0.8);
+            box-shadow: 0 4px 20px rgba(184, 166, 155, 0.15);
+        }
+
+        /* 輸入框樣式 */
+        .input-style {
+            width: 100%;
+            background-color: rgba(255, 255, 255, 0.5);
+            border: 1px solid rgba(199, 178, 153, 0.2);
+            border-radius: 0.75rem;
+            padding: 0.75rem 1rem;
+            font-size: 0.875rem;
+            color: #594A42; /* brand-text */
+            outline: none;
+            transition: all 0.2s;
+        }
+        .input-style:focus {
+            background-color: #ffffff;
+            border-color: rgba(199, 178, 153, 0.5);
+        }
+        .input-style::placeholder {
+            color: #94a3b8;
+        }
+
+        /* 動畫 */
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(2deg); }
+        }
+        .animate-float { animation: float 8s ease-in-out infinite; }
+
+        @keyframes fade-in {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in { animation: fade-in 0.6s ease-out forwards; }
+
+        @keyframes scroll {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+        .animate-scroll { animation: scroll 20s linear infinite; }
+
+        /* 隱藏捲軸但保留功能 */
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+        }
+        .scrollbar-hide {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        /* 頁面切換控制 */
+        .view-section {
+            display: none; /* 預設隱藏所有區塊 */
+        }
+        .view-section.active {
+            display: block; /* 只有 active 的顯示 */
+        }
+    </style>
+</head>
+<body class="min-h-screen pb-28 relative">
+
+    <div class="fixed rounded-full blur-[120px] -z-10 opacity-40 bg-brand-secondary top-[-15%] right-[-25%] w-[500px] h-[500px] animate-float"></div>
+    <div class="fixed rounded-full blur-[100px] -z-10 opacity-50 bg-[#CDB5A8] bottom-[5%] left-[-20%] w-[400px] h-[400px] animate-float" style="animation-direction: reverse;"></div>
+
+    <nav class="fixed top-0 w-full z-40 bg-brand-bg/80 backdrop-blur-md px-6 py-3 flex justify-between items-center shadow-sm">
+        <div class="flex items-center gap-4 cursor-pointer" onclick="switchView('home')">
+            <img src="logo.jpg" onerror="this.src='https://placehold.co/100x100?text=Logo'" alt="Logo" class="w-12 h-12 object-cover rounded-full border border-brand-primary/30">
+            <div class="flex items-center">
+                <span class="text-3xl font-bold tracking-tighter text-brand-text">麥克諾尼</span>
+                <span class="text-2xl text-brand-primary/40 mx-2 font-light">|</span>
+                <div class="flex flex-col justify-center">
+                    <span class="text-[13px] font-bold leading-tight text-brand-dark">日式寵物沙龍</span>
+                    <span class="text-[10px] text-brand-light tracking-wider leading-tight font-medium uppercase">ペットサロン</span>
+                </div>
+            </div>
+        </div>
+        <button id="back-btn" onclick="switchView('home')" class="text-brand-light hover:text-brand-text transition-colors hidden">
+            <i data-lucide="arrow-left" class="w-6 h-6"></i>
+        </button>
+    </nav>
+
+    <main class="pt-24 px-5 max-w-lg mx-auto space-y-8">
+        
+        <div id="view-home" class="view-section active animate-fade-in space-y-8">
+            <div class="text-center space-y-4">
+                <div class="w-28 h-28 mx-auto mb-2 rounded-full p-1 border border-brand-primary/20 overflow-hidden">
+                    <img src="logo.jpg" onerror="this.src='https://placehold.co/200x200?text=Logo'" alt="Logo" class="w-full h-full object-cover rounded-full">
+                </div>
+                <h1 class="text-2xl font-bold font-serif text-brand-primary italic">毛小孩的笑容是最甜蜜的糖果</h1>
+                <div class="flex justify-center gap-2">
+                    <span class="text-[10px] text-brand-light bg-brand-primary/10 px-2 py-0.5 rounded-full tracking-wider">#台北松山</span>
+                    <span class="text-[10px] text-brand-light bg-brand-primary/10 px-2 py-0.5 rounded-full tracking-wider">#日式美容</span>
+                    <span class="text-[10px] text-brand-light bg-brand-primary/10 px-2 py-0.5 rounded-full tracking-wider">#合格認證</span>
+                </div>
+                <p class="text-xs text-brand-light leading-relaxed px-4 text-justify mx-auto max-w-xs">
+                    承襲日式寵物文化 30 年。我們秉持「家人」的初衷，提供最高品質的洗護與專業諮詢。
+                </p>
+            </div>
+
+            <div class="overflow-hidden relative w-full h-32 rounded-2xl cursor-pointer shadow-sm border border-white/60" onclick="switchView('products')">
+                <div class="absolute inset-0 z-20 flex flex-col justify-center items-center text-white bg-black/25 backdrop-blur-[1px]">
+                    <h3 class="font-bold text-lg tracking-widest drop-shadow-md">嚴選日系洗護</h3>
+                    <p class="text-[10px] opacity-90 uppercase">Premium Japanese Spa Showcase</p>
+                </div>
+                <div class="flex w-[400%] h-full animate-scroll">
+                    <div class="flex w-full h-full" id="banner-container">
+                        </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <button onclick="switchView('grooming')" class="glass-card p-6 text-left hover:-translate-y-1 transition-all group">
+                    <i data-lucide="scissors" class="w-6 h-6 mb-4 text-brand-primary"></i>
+                    <h3 class="font-bold text-brand-text">美容預約</h3>
+                    <p class="text-[10px] text-brand-light mt-1">建立電子契約與服務</p>
+                </button>
+                <button onclick="switchView('products')" class="glass-card p-6 text-left hover:-translate-y-1 transition-all group">
+                    <i data-lucide="sparkles" class="w-6 h-6 mb-4 text-brand-primary"></i>
+                    <h3 class="font-bold text-brand-text">產品介紹</h3>
+                    <p class="text-[10px] text-brand-light mt-1">查看高級洗劑詳情</p>
+                </button>
+            </div>
+
+            <div class="glass-card p-5 border-l-4 border-brand-primary space-y-3 shadow-sm">
+                <h4 className="font-bold text-sm flex items-center gap-2 text-brand-text">
+                    <div class="flex items-center gap-2 font-bold text-sm text-brand-text">
+                        <i data-lucide="store" class="w-4 h-4 text-brand-primary"></i> 門市資訊
+                    </div>
+                </h4>
+                <ul class="text-xs space-y-2">
+                    <li><span class="text-brand-light w-16 inline-block">營業時間</span> 09:00 - 18:00</li>
+                    <li><span class="text-brand-light w-16 inline-block">公休日</span> 週三、週日</li>
+                    <li><span class="text-brand-light w-16 inline-block">預約電話</span> 02-27129404</li>
+                </ul>
+            </div>
+
+            <div class="w-full max-w-sm mx-auto pt-4 pb-8">
+                <div class="bg-white/80 backdrop-blur-md rounded-full shadow-lg p-1.5 flex justify-between items-center px-6 border border-white/60">
+                    <i data-lucide="facebook" class="w-5 h-5 text-brand-light cursor-pointer hover:text-blue-600"></i>
+                    <a href="https://line.me/ti/p/@ais9839d" target="_blank" class="bg-[#06C755] text-white px-5 py-2.5 rounded-full flex items-center gap-2 shadow-lg -mt-5 hover:scale-105 transition-transform">
+                        <i data-lucide="message-circle" class="w-4 h-4"></i>
+                        <span class="text-xs font-bold">預約諮詢</span>
+                    </a>
+                    <i data-lucide="instagram" class="w-5 h-5 text-brand-light cursor-pointer hover:text-pink-600"></i>
+                </div>
+            </div>
+        </div>
+
+        <div id="view-products" class="view-section animate-fade-in space-y-8 pb-20">
+            <div class="text-center space-y-2">
+                <h2 class="text-xl font-bold">嚴選日系洗護系列</h2>
+                <p class="text-[10px] text-brand-light px-6">堅持全程採用日本進口洗劑，給毛孩如空氣般柔軟的呵護</p>
+            </div>
+
+            <div class="glass-card p-5 space-y-4 shadow-md bg-white/80">
+                <div class="aspect-[21/9] rounded-xl overflow-hidden bg-[#fafafa] flex items-center justify-center">
+                    <img src="line_oa_chat_260116_170322.jpg" onerror="this.src='https://placehold.co/600x300?text=Product'" class="max-w-full max-h-full object-contain" alt="ZOIC Cats">
+                </div>
+                <div class="text-center">
+                    <span class="text-[10px] bg-brand-secondary text-brand-text px-2 py-0.5 rounded-full font-bold mb-2 inline-block tracking-widest uppercase">Hero Product</span>
+                    <h3 class="text-lg font-bold text-brand-text">ZOIC 貓咪專用洗護</h3>
+                    <p class="text-xs text-brand-light mt-1">針對貓咪膚質開發，極致柔軟與蓬鬆感的完美呈現</p>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-4" id="product-list">
+                </div>
+        </div>
+
+        <div id="view-grooming" class="view-section animate-fade-in space-y-6 pb-20">
+            <div class="text-center space-y-2">
+                <h2 class="text-xl font-bold">美容預約單</h2>
+                <p class="text-xs text-brand-light">請填寫詳細資料以建立電子預約契約</p>
+            </div>
+
+            <div class="glass-card p-6 border-none bg-white shadow-sm relative overflow-hidden">
+                <div class="absolute top-0 right-0 w-32 h-32 bg-[#06C755]/10 rounded-full blur-3xl"></div>
+                <div class="relative z-10 space-y-5">
+                    <div class="text-center space-y-1">
+                        <h3 class="text-xl font-black text-brand-text flex items-center justify-center gap-2">
+                            <i data-lucide="message-circle" class="w-6 h-6 text-[#06C755] fill-current"></i>
+                            加入官方 LINE
+                        </h3>
+                        <p class="text-xs text-brand-light font-bold">ID: @ais9839d</p>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 gap-3">
+                        <a href="https://line.me/ti/p/@ais9839d" target="_blank" class="bg-[#fbf9f6] border border-[#06C755]/30 rounded-2xl p-4 flex flex-col items-center justify-center gap-1 hover:bg-[#06C755]/5 transition-colors group">
+                            <div class="w-6 h-6 rounded-full bg-[#06C755] text-white flex items-center justify-center font-black text-xs mb-1">1</div>
+                            <span class="font-bold text-base text-[#06C755]">點擊加入好友</span>
+                            <div class="mt-1 w-full py-2 bg-[#06C755] text-white rounded-lg text-center font-bold text-xs shadow-md group-hover:scale-105 transition-transform">立即加 LINE</div>
+                        </a>
+                        <div class="bg-red-50 border border-red-200 rounded-2xl p-4 flex flex-col items-center justify-center gap-1 text-center relative overflow-hidden mt-3">
+                            <div class="w-6 h-6 rounded-full bg-red-500 text-white flex items-center justify-center font-black text-xs mb-1 relative z-10">2</div>
+                            <span class="font-bold text-base text-red-600 relative z-10">務必「傳送貼圖」</span>
+                            <span class="text-[10px] font-bold text-red-500 relative z-10">⚠️ 沒傳貼圖，我們就找不到您囉！</span>
+                        </div>
+                    </div>
+
+                    <button id="line-check-btn" onclick="toggleLineCheck()" class="w-full flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-bold transition-all duration-300 border bg-white text-brand-light border-slate-200">
+                        <div id="line-check-icon" class="w-4 h-4 rounded-full border border-current flex items-center justify-center"></div>
+                        <span id="line-check-text" class="text-sm">確認：我已完成上述兩步驟</span>
+                    </button>
+                </div>
+            </div>
+
+            <form id="booking-form" class="space-y-6" onsubmit="handleFormSubmit(event)">
+              
+                <section class="glass-card p-6 space-y-4">
+                    <h3 class="text-sm font-bold flex items-center gap-2 text-brand-dark border-b border-brand-primary/10 pb-2">
+                        <div class="w-1.5 h-1.5 bg-brand-primary rounded-full"></div> 一、飼主基本資料
+                    </h3>
+                    
+                    <div class="space-y-1">
+                        <label class="text-xs font-bold text-brand-light ml-1">手機號碼 *</label>
+                        <div class="flex gap-2">
+                            <input type="tel" name="phone" id="phone" class="input-style" placeholder="09xxxxxxxx" required>
+                            <button type="button" onclick="autoFillDemo()" class="whitespace-nowrap px-4 bg-brand-primary text-white text-xs font-bold rounded-xl shadow-sm active:scale-95 transition-transform">帶入紀錄</button>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="space-y-1">
+                            <label class="text-xs font-bold text-brand-light ml-1">飼主姓名 *</label>
+                            <input type="text" name="ownerName" id="ownerName" class="input-style" placeholder="全名" required>
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-xs font-bold text-brand-light ml-1">身分證字號 *</label>
+                            <input type="text" name="ownerId" id="ownerId" class="input-style" placeholder="需核對身分" required>
+                        </div>
+                    </div>
+
+                    <div class="space-y-1">
+                        <label class="text-xs font-bold text-brand-light ml-1">電子信箱 (寄送契約副本) *</label>
+                        <input type="email" name="email" id="email" class="input-style" placeholder="example@email.com" required>
+                    </div>
+
+                    <div class="space-y-1">
+                        <label class="text-xs font-bold text-brand-light ml-1">通訊地址 *</label>
+                        <input type="text" name="address" id="address" class="input-style" placeholder="完整地址" required>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3 bg-brand-bg/50 p-3 rounded-xl border border-brand-primary/10">
+                        <div class="space-y-1">
+                            <label class="text-xs font-bold text-brand-dark ml-1">緊急聯絡人 *</label>
+                            <input type="text" name="emergencyName" id="emergencyName" class="input-style" placeholder="姓名" required>
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-xs font-bold text-brand-dark ml-1">緊急電話 *</label>
+                            <input type="tel" name="emergencyPhone" id="emergencyPhone" class="input-style" placeholder="電話" required>
+                        </div>
+                    </div>
+
+                    <div class="space-y-1">
+                        <label class="text-xs font-bold text-brand-light ml-1">指定就醫醫院</label>
+                        <input type="text" name="preferredClinic" id="preferredClinic" class="input-style" placeholder="若無請填無，將送往特約醫院">
+                    </div>
+                </section>
+
+                <section class="glass-card p-6 space-y-5">
+                    <h3 class="text-sm font-bold flex items-center gap-2 text-brand-dark border-b border-brand-primary/10 pb-2">
+                        <div class="w-1.5 h-1.5 bg-brand-secondary rounded-full"></div> 二、寵物詳細資料
+                    </h3>
+
+                    <div class="space-y-2">
+                        <label class="text-xs font-bold text-brand-light ml-1">寵物種類 *</label>
+                        <div class="flex gap-3">
+                            <label class="option-card flex-1 py-3 rounded-xl flex items-center justify-center gap-2 text-sm font-bold" onclick="selectSpecies('犬', this)">
+                                <input type="radio" name="petSpecies" value="犬" checked class="w-4 h-4 accent-brand-primary pointer-events-none"> 犬
+                            </label>
+                            <label class="option-card flex-1 py-3 rounded-xl flex items-center justify-center gap-2 text-sm font-bold" onclick="selectSpecies('貓', this)">
+                                <input type="radio" name="petSpecies" value="貓" class="w-4 h-4 accent-brand-primary pointer-events-none"> 貓
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="space-y-1">
+                            <label class="text-xs font-bold text-brand-light ml-1">名字 *</label>
+                            <input type="text" name="petName" id="petName" class="input-style" required>
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-xs font-bold text-brand-light ml-1">品種/顏色 *</label>
+                            <input type="text" name="breed" id="breed" class="input-style" placeholder="例: 貴賓/紅色" required>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="space-y-1">
+                            <label class="text-xs font-bold text-brand-light ml-1">年齡 (歲) *</label>
+                            <input type="number" name="ageYear" id="ageYear" class="input-style text-center" placeholder="歲" required oninput="checkRisk(this.value)">
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-xs font-bold text-brand-light ml-1">體重 (kg) *</label>
+                            <input type="number" step="0.1" name="weight" id="weight" class="input-style" required>
+                        </div>
+                    </div>
+
+                    <div class="space-y-2 pt-2 border-t border-brand-primary/10">
+                        <label class="text-xs font-bold text-brand-light ml-1">晶片號碼 *</label>
+                        <div class="flex flex-col gap-2">
+                            <select name="chipStatus" class="input-style" onchange="document.getElementById('chipIdInput').style.display = this.value === '有晶片' ? 'block' : 'none'">
+                                <option value="有晶片">有晶片</option>
+                                <option value="有晶片(號碼不詳)">有晶片(號碼不詳)</option>
+                                <option value="無晶片">無晶片</option>
+                            </select>
+                            <input type="text" id="chipIdInput" class="input-style" placeholder="請輸入完整晶片號碼">
+                        </div>
+                    </div>
+                </section>
+
+                <section class="glass-card p-6 border border-brand-primary/20 bg-white/60">
+                    <h3 class="text-sm font-bold flex items-center gap-2 text-brand-dark mb-4">
+                        <div class="w-1.5 h-1.5 bg-brand-primary rounded-full"></div> 服務項目與計價
+                    </h3>
+                    
+                    <div class="grid grid-cols-2 gap-3 mb-6">
+                         <label class="flex items-center gap-2"><input type="checkbox" name="serviceType" value="洗澡"> <span class="text-xs">洗澡</span></label>
+                        <label class="flex items-center gap-2"><input type="checkbox" name="serviceType" value="大美容"> <span class="text-xs">大美容</span></label>
+                        <label class="flex items-center gap-2"><input type="checkbox" name="serviceType" value="小美容"> <span class="text-xs">小美容</span></label>
+                        <label class="flex items-center gap-2"><input type="checkbox" name="serviceType" value="住宿"> <span class="text-xs">住宿</span></label>
+                    </div>
+
+                    <div class="space-y-4 mb-6">
+                        <h4 class="text-xs font-bold text-brand-text flex items-center gap-1">
+                            <i data-lucide="sparkles" class="w-3 h-3 text-brand-primary"></i> 升級 SPA
+                        </h4>
+
+                        <div id="dog-spa-list" class="animate-fade-in block">
+                            <h5 class="text-[10px] font-bold text-red-500 mb-1 pl-1">【狗狗專屬 SPA】</h5>
+                            <div class="grid grid-cols-1 gap-2" id="dog-spa-container">
+                                </div>
+                        </div>
+
+                        <div id="cat-spa-list" class="animate-fade-in hidden">
+                            <h5 class="text-[10px] font-bold text-red-500 mb-2 pl-1">【貓咪專屬 SPA】</h5>
+                            <div class="bg-orange-50/80 p-3 rounded-xl border border-orange-100 mb-3 text-[11px] text-brand-dark leading-relaxed text-justify">
+                                <span class="font-bold text-orange-600 block mb-1">★ 本店採用：</span>
+                                日本 ZOIC 貓咪專業沙龍 SPA (含有日本木天蓼草萃取，能讓貓咪愉悅放鬆的洗澡) 或 義大利進階貓咪沙龍洗護。
+                            </div>
+                            <div class="grid grid-cols-1 gap-2" id="cat-spa-container">
+                                </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-brand-bg rounded-xl p-4 border border-brand-primary/10 space-y-4">
+                        <div>
+                            <h5 class="text-xs font-bold text-red-500 mb-2">特殊服務：毛髮打結處理</h5>
+                            <label class="flex items-center gap-2 cursor-pointer bg-red-50 p-2 rounded-lg border border-red-100">
+                                <input type="checkbox" name="hasMatting" class="accent-red-500 w-4 h-4">
+                                <span class="text-[11px] font-bold text-red-700">疑似有打結 (現場評估 $300~$2000)</span>
+                            </label>
+                        </div>
+                        <div class="border border-red-200 rounded-xl bg-white overflow-hidden shadow-sm">
+                             <div class="h-32 overflow-y-auto p-3 text-[10px] text-slate-600 bg-slate-50/30">
+                                 <p class="mb-2">如毛孩於美容過程中發現有毛髮打結，飼主同意本店依下列方式處理：</p>
+                                 <ul class="list-disc pl-4 space-y-1">
+                                     <li><strong>方案一：拆結</strong> (需支付額外費用，可能造成毛量減少)</li>
+                                     <li><strong>方案二：直接修剪</strong> (不拆結，剃除打結處，外觀可能不均)</li>
+                                 </ul>
+                             </div>
+                             <div class="p-2 bg-red-50/50 border-t border-red-100 grid grid-cols-1 gap-2">
+                                <label class="flex items-center gap-2 text-[11px] p-2 hover:bg-white rounded cursor-pointer">
+                                    <input type="radio" name="mattingChoice" value="demat"> 方案一：同意拆結
+                                </label>
+                                <label class="flex items-center gap-2 text-[11px] p-2 hover:bg-white rounded cursor-pointer">
+                                    <input type="radio" name="mattingChoice" value="shave"> 方案二：不同意拆結 (直接修剪)
+                                </label>
+                             </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="glass-card p-6 space-y-4">
+                    <h3 class="text-sm font-bold text-brand-dark mb-2">契約條款與簽署</h3>
+                    
+                    <div id="risk-warning" class="hidden animate-fade-in border-2 border-red-200 bg-red-50 p-4 rounded-xl space-y-2">
+                        <div class="flex items-center gap-2 text-red-600 font-bold text-xs">
+                          <span class="bg-red-600 text-white px-2 py-0.5 rounded text-[10px]">重要</span>
+                          高風險寵物美容服務風險告知
+                        </div>
+                        <p class="text-[11px] text-red-800 leading-relaxed text-justify">
+                          系統檢測您的寵物為 <strong>高齡(8歲+)</strong> 或 <strong>幼體(1歲-)</strong>。
+                          <br/>請確認您已知悉相關風險，並同意店家在緊急時刻進行醫療處置。
+                        </p>
+                        <label class="flex items-center gap-2 mt-2 cursor-pointer">
+                          <input type="checkbox" id="risk-checkbox" class="accent-red-500 w-4 h-4" />
+                          <span class="text-xs font-bold text-red-700">我已了解並同意承擔高風險服務責任</span>
+                        </label>
+                    </div>
+
+                    <label class="flex items-start gap-3 p-2 cursor-pointer mt-2 bg-white/50 rounded-xl">
+                        <input type="checkbox" id="agreement" class="mt-1 w-4 h-4 accent-brand-primary" required>
+                        <span class="text-xs font-bold text-brand-text pt-0.5">本人已詳閱並同意以上契約內容</span>
+                    </label>
+
+                    <button type="submit" class="w-full bg-brand-text text-white py-4 rounded-xl font-bold flex items-center justify-center gap-2 shadow-lg active:scale-95 transition-all hover:bg-brand-dark">
+                        <i data-lucide="check-circle" class="w-4 h-4"></i> 確認送出預約
+                    </button>
+                </section>
+
+            </form>
+        </div>
+
+    </main>
+
+    <script>
+        // 1. 初始化圖示
+        lucide.createIcons();
+
+        // 2. 資料設定 (注意：移除最前面的 /)
+        const bannerImages = [
+            'line_oa_chat_260116_170310_group_0.jpg',
+            'line_oa_chat_260116_170310_group_1.jpg',
+            'line_oa_chat_260116_170310_group_2.jpg',
+            'line_oa_chat_260116_170310_group_3.jpg',
+            'line_oa_chat_260116_170310_group_4.jpg',
+            'line_oa_chat_260116_170310_group_5.jpg',
+            'line_oa_chat_260116_170310_group_6.jpg',
+            'line_oa_chat_260116_170310_group_7.jpg',
+            'line_oa_chat_260116_170322.jpg',
+        ];
+
+        const productList = [
+            { title: "紅寶系列", sub: "進階美容專用", img: "line_oa_chat_260116_170310_group_0.jpg" },
+            { title: "魚子醬系列", sub: "頂級精華修復", img: "line_oa_chat_260116_170310_group_1.jpg" },
+            { title: "艾詩貝調理", sub: "礦物元素護理", img: "line_oa_chat_260116_170310_group_2.jpg" },
+            { title: "RENADOG", sub: "高級低敏香氛", img: "line_oa_chat_260116_170310_group_3.jpg" },
+            { title: "SKIMO 護膚", sub: "日系新感覺保濕", img: "line_oa_chat_260116_170310_group_4.jpg" },
+            { title: "Furmake EX", sub: "專業蓬鬆洗劑", img: "line_oa_chat_260116_170310_group_5.jpg" },
+            { title: "ZOIC Cut-X", sub: "日製造型噴霧", img: "line_oa_chat_260116_170310_group_6.jpg" },
+            { title: "柔雅炭酸泉", sub: "深層清潔美肌", img: "line_oa_chat_260116_170310_group_7.jpg" }
+        ];
+
+        const dogSpas = [
+            { name: '日本 ZOIC 碳酸 SPA', price: '+199' },
+            { name: '日本頂級 SKIMO 奈米 SPA', price: '+399' },
+            { name: '義大利魚子醬 SPA', price: '+399' },
+            { name: '義大利柑橘廢毛SPA', price: '+399' },
+            { name: '義大利活化抗老百香果SPA', price: '+399' },
+            { name: '義大利客製化皮膚調理 SOA', price: '+399~599' },
+            { name: '美國去油護理服務/除廢毛 SPA', price: '300~500' },
+        ];
+
+        const catSpas = [
+            { name: '義大利客製化皮膚調理 SOA', price: '+399' },
+            { name: '義大利魚子醬 SPA', price: '+399' },
+            { name: '義大利柑橘/百香果代謝廢毛 SPA', price: '+399' },
+            { name: '日本 ZOIC 碳酸 SPA', price: '+199' },
+            { name: '日本頂級 SKIMO 奈米 SPA', price: '+399' },
+            { name: '美國去油護理服務/除廢毛 SPA', price: '300~500' },
+        ];
+
+        // 3. 初始化渲染函式
+        function init() {
+            // 渲染 Banner
+            const bannerContainer = document.getElementById('banner-container');
+            // 重複兩次以利無限捲動
+            const allImages = [...bannerImages, ...bannerImages, ...bannerImages, ...bannerImages];
+            bannerContainer.innerHTML = allImages.map(src => 
+                `<img src="${src}" onerror="this.style.display='none'" class="h-full w-[10%] object-cover" alt="banner">`
+            ).join('');
+
+            // 渲染產品
+            const productContainer = document.getElementById('product-list');
+            productContainer.innerHTML = productList.map(item => `
+                <div class="bg-white p-3 rounded-2xl shadow-sm space-y-3">
+                  <div class="aspect-square rounded-xl overflow-hidden bg-[#fafafa] flex items-center justify-center">
+                    <img src="${item.img}" onerror="this.src='https://placehold.co/150x150?text=Product'" class="max-w-full max-h-full object-contain p-1" alt="${item.title}" />
+                  </div>
+                  <div class="px-1 text-center">
+                    <h4 class="text-xs font-bold text-brand-text leading-tight">${item.title}</h4>
+                    <p class="text-[10px] text-brand-light leading-tight">${item.sub}</p>
+                  </div>
+                </div>
+            `).join('');
+
+            // 渲染 SPA
+            renderSpaList('dog-spa-container', dogSpas);
+            renderSpaList('cat-spa-container', catSpas);
+
+            // 檢查 Hash 路由
+            const hash = window.location.hash.replace('#', '');
+            if(hash) switchView(hash);
+        }
+
+        function renderSpaList(id, list) {
+            document.getElementById(id).innerHTML = list.map(spa => `
+                <label class="flex items-center justify-between p-3 rounded-xl border border-transparent hover:bg-white/80 bg-white/40 transition-all cursor-pointer">
+                    <div class="flex items-center gap-3">
+                        <input type="checkbox" name="spaUpgrades" value="${spa.name}" class="accent-brand-primary">
+                        <span class="text-xs font-bold text-brand-text">${spa.name}</span>
+                    </div>
+                    <span class="text-xs font-bold text-brand-primary">${spa.price}</span>
+                </label>
+            `).join('');
+        }
+
+        // 4. 視圖切換邏輯
+        function switchView(viewName) {
+            // 隱藏所有 section
+            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+            // 顯示目標 section
+            const target = document.getElementById('view-' + viewName);
+            if(target) target.classList.add('active');
+            
+            // 捲動到頂部
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+
+            // 控制導航按鈕
+            const backBtn = document.getElementById('back-btn');
+            if (viewName === 'home') {
+                backBtn.classList.add('hidden');
+                history.pushState(null, null, ' '); // 清除 hash
+            } else {
+                backBtn.classList.remove('hidden');
+                window.location.hash = viewName;
+            }
+        }
+
+        // 5. Line 確認按鈕邏輯
+        let lineConfirmed = false;
+        function toggleLineCheck() {
+            lineConfirmed = !lineConfirmed;
+            const btn = document.getElementById('line-check-btn');
+            const icon = document.getElementById('line-check-icon');
+            const text = document.getElementById('line-check-text');
+
+            if (lineConfirmed) {
+                btn.className = "w-full flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-bold transition-all duration-300 border bg-[#06C755] text-white border-[#06C755] shadow-lg";
+                icon.className = "w-4 h-4 rounded-full border border-white bg-white/20 flex items-center justify-center";
+                icon.innerHTML = '<i data-lucide="check" size="10" class="w-3 h-3"></i>';
+                text.innerText = "OK！我已加入並傳送貼圖";
+                lucide.createIcons();
+            } else {
+                btn.className = "w-full flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-bold transition-all duration-300 border bg-white text-brand-light border-slate-200";
+                icon.className = "w-4 h-4 rounded-full border border-current flex items-center justify-center";
+                icon.innerHTML = '';
+                text.innerText = "確認：我已完成上述兩步驟";
+            }
+        }
+
+        // 6. 寵物種類切換邏輯
+        function selectSpecies(species, labelEl) {
+            // UI 更新
+            document.querySelectorAll('.option-card input[name="petSpecies"]').forEach(el => {
+                el.parentElement.classList.remove('selected', 'bg-white', 'border-brand-primary', 'shadow-md');
+            });
+            labelEl.classList.add('selected', 'bg-white', 'border-brand-primary', 'shadow-md');
+            labelEl.querySelector('input').checked = true;
+
+            // SPA 列表切換
+            if (species === '犬') {
+                document.getElementById('dog-spa-list').classList.remove('hidden');
+                document.getElementById('cat-spa-list').classList.add('hidden');
+            } else {
+                document.getElementById('dog-spa-list').classList.add('hidden');
+                document.getElementById('cat-spa-list').classList.remove('hidden');
+            }
+        }
+
+        // 7. 高風險檢查
+        function checkRisk(age) {
+            const warning = document.getElementById('risk-warning');
+            const ageNum = parseInt(age);
+            if (ageNum >= 8 || ageNum <= 1) {
+                warning.classList.remove('hidden');
+            } else {
+                warning.classList.add('hidden');
+            }
+        }
+
+        // 8. 帶入歷史資料 Demo
+        function autoFillDemo() {
+            const phone = document.getElementById('phone').value;
+            if (phone === '0912345678') {
+                alert('已找到歷史紀錄！自動帶入測試資料...');
+                document.getElementById('ownerName').value = '測試飼主';
+                document.getElementById('email').value = 'test@example.com';
+                document.getElementById('ownerId').value = 'A123456789';
+                document.getElementById('address').value = '台北市松山區測試路段';
+                document.getElementById('emergencyName').value = '王小明';
+                document.getElementById('emergencyPhone').value = '0987654321';
+                document.getElementById('petName').value = '旺財';
+                document.getElementById('breed').value = '柴犬';
+                document.getElementById('ageYear').value = '5';
+                document.getElementById('weight').value = '12';
+                checkRisk(5);
+            } else {
+                alert('查無此號碼 (測試號碼: 0912345678)');
+            }
+        }
+
+        // 9. 表單提交
+        function handleFormSubmit(e) {
+            e.preventDefault();
+            // 這裡加入各種檢查
+            if (!lineConfirmed) {
+                alert('請先確認已加入 LINE 官方帳號並傳送貼圖！');
+                document.getElementById('view-grooming').scrollIntoView();
+                return;
+            }
+            
+            // 檢查打結方案
+            const matting = document.querySelector('input[name="mattingChoice"]:checked');
+            if (!matting) {
+                alert('請選擇「毛髮打結處理方式」');
+                return;
+            }
+
+            // 高風險檢查
+            const riskCheckbox = document.getElementById('risk-checkbox');
+            if (!document.getElementById('risk-warning').classList.contains('hidden') && !riskCheckbox.checked) {
+                alert('請勾選同意高風險服務責任');
+                return;
+            }
+
+            alert('預約送出成功！(這是靜態頁面 Demo)');
+            switchView('home');
+        }
+
+        // 啟動
+        window.addEventListener('load', init);
+
+    </script>
+</body>
+</html>
