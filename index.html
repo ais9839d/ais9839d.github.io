@@ -153,10 +153,15 @@
                     <img src="logo.jpg" onerror="this.src='https://placehold.co/200x200?text=Logo'" alt="Logo" class="w-full h-full object-cover rounded-full">
                 </div>
                 <h1 class="text-2xl font-bold font-serif text-brand-primary italic">毛小孩的笑容是最甜蜜的糖果</h1>
-                <div class="flex justify-center gap-2">
-                    <span class="text-[10px] text-brand-light bg-brand-primary/10 px-2 py-0.5 rounded-full tracking-wider">#台北松山</span>
-                    <span class="text-[10px] text-brand-light bg-brand-primary/10 px-2 py-0.5 rounded-full tracking-wider">#日式美容</span>
-                    <span class="text-[10px] text-brand-light bg-brand-primary/10 px-2 py-0.5 rounded-full tracking-wider">#合格認證</span>
+<div class="flex flex-wrap justify-center gap-2 px-4">
+                    <span class="text-[10px] text-brand-light bg-brand-primary/10 px-2 py-0.5 rounded-full tracking-wider">#台北市松山區</span>
+                    <span class="text-[10px] text-brand-light bg-brand-primary/10 px-2 py-0.5 rounded-full tracking-wider">#全新裝修空間</span>
+                    <span class="text-[10px] text-brand-light bg-brand-primary/10 px-2 py-0.5 rounded-full tracking-wider">#全程手工吹整</span>
+                    <span class="text-[10px] text-brand-light bg-brand-primary/10 px-2 py-0.5 rounded-full tracking-wider">#日式寵物美容</span>
+                    <span class="text-[10px] text-brand-light bg-brand-primary/10 px-2 py-0.5 rounded-full tracking-wider">#合格寵物美容師</span>
+                    <span class="text-[10px] text-brand-light bg-brand-primary/10 px-2 py-0.5 rounded-full tracking-wider">#客製化皮毛護理</span>
+                    <span class="text-[10px] text-brand-light bg-brand-primary/10 px-2 py-0.5 rounded-full tracking-wider">#每日消毒清潔</span>
+                    <span class="text-[10px] text-brand-light bg-brand-primary/10 px-2 py-0.5 rounded-full tracking-wider">#高齡犬友善</span>
                 </div>
                 <p class="text-xs text-brand-light leading-relaxed px-4 text-justify mx-auto max-w-xs">
                     承襲日式寵物文化 30 年。我們秉持「家人」的初衷，提供最高品質的洗護與專業諮詢。
@@ -327,6 +332,19 @@
     <h3 class="text-sm font-bold flex items-center gap-2 text-brand-dark border-b border-brand-primary/10 pb-2">
         <div class="w-1.5 h-1.5 bg-brand-secondary rounded-full"></div> 二、寵物詳細資料
     </h3>
+    <div class="space-y-1">
+        <label class="text-xs font-bold text-brand-light ml-1">寵物種類 *</label>
+        <div class="flex gap-2">
+            <label class="option-card flex-1 py-3 rounded-xl flex items-center justify-center gap-2 text-sm font-bold" onclick="selectSpecies('犬', this)">
+                <input type="radio" name="petSpecies" value="犬" class="hidden" required> 
+                <i data-lucide="dog" class="w-4 h-4"></i> 狗狗
+            </label>
+            <label class="option-card flex-1 py-3 rounded-xl flex items-center justify-center gap-2 text-sm font-bold" onclick="selectSpecies('貓', this)">
+                <input type="radio" name="petSpecies" value="貓" class="hidden"> 
+                <i data-lucide="cat" class="w-4 h-4"></i> 貓咪
+            </label>
+        </div>
+    </div>    
 
     <div class="grid grid-cols-2 gap-3">
         <div class="space-y-1">
@@ -498,8 +516,12 @@
                             <i data-lucide="sparkles" class="w-3 h-3 text-brand-primary"></i> 升級 SPA
                         </h4>
 
-                        <div id="dog-spa-list" class="animate-fade-in block">
-                            <h5 class="text-[10px] font-bold text-red-500 mb-1 pl-1">【狗狗專屬 SPA】</h5>
+<div id="dog-spa-list" class="animate-fade-in hidden">
+                            <h5 class="text-[10px] font-bold text-red-500 mb-2 pl-1">【狗狗專屬 SPA】</h5>
+                            <div class="bg-orange-50/80 p-3 rounded-xl border border-orange-100 mb-3 text-[11px] text-brand-dark leading-relaxed text-justify">
+                                <span class="font-bold text-orange-600 block mb-1">★ 本店採用：</span>
+                                狗狗基礎使用日本 ZOIC 洗護。想給寶貝們更進階的服務，可升級加購以下奢華 SPA 服務。
+                            </div>
                             <div class="grid grid-cols-1 gap-2" id="dog-spa-container">
                                 </div>
                         </div>
@@ -508,7 +530,8 @@
                             <h5 class="text-[10px] font-bold text-red-500 mb-2 pl-1">【貓咪專屬 SPA】</h5>
                             <div class="bg-orange-50/80 p-3 rounded-xl border border-orange-100 mb-3 text-[11px] text-brand-dark leading-relaxed text-justify">
                                 <span class="font-bold text-orange-600 block mb-1">★ 本店採用：</span>
-                                日本 ZOIC 貓咪專業沙龍 SPA (含有日本木天蓼草萃取，能讓貓咪愉悅放鬆的洗澡) 或 義大利進階貓咪沙龍洗護。
+                                貓咪基礎使用日本 ZOIC 貓咪沙龍 SPA (含有日本木天蓼草萃取，能讓貓咪愉悅放鬆的洗澡) 或 義大利進階貓咪沙龍洗護。<br>
+                                想給寶貝們更進階的服務，可升級加購以下奢華 SPA 服務。
                             </div>
                             <div class="grid grid-cols-1 gap-2" id="cat-spa-container">
                                 </div>
@@ -713,12 +736,12 @@
         const productList = [
             { title: "紅寶系列", sub: "進階美容專用", img: "line_oa_chat_260116_170310_group_0.jpg" },
             { title: "魚子醬系列", sub: "頂級精華修復", img: "line_oa_chat_260116_170310_group_1.jpg" },
-            { title: "艾詩貝調理", sub: "礦物元素護理", img: "line_oa_chat_260116_170310_group_2.jpg" },
-            { title: "RENADOG", sub: "高級低敏香氛", img: "line_oa_chat_260116_170310_group_3.jpg" },
-            { title: "SKIMO 護膚", sub: "日系新感覺保濕", img: "line_oa_chat_260116_170310_group_4.jpg" },
+            { title: "艾詩貝客製化皮膚調理", sub: "礦物元素SPA", img: "line_oa_chat_260116_170310_group_2.jpg" },
+            { title: "RENADOG", sub: "韓國專業造型剪毛洗護SPA", img: "line_oa_chat_260116_170310_group_3.jpg" },
+            { title: "SKIMO 頂級奈米護膚", sub: "日系新感覺保濕", img: "line_oa_chat_260116_170310_group_4.jpg" },
             { title: "Furmake EX", sub: "專業蓬鬆洗劑", img: "line_oa_chat_260116_170310_group_5.jpg" },
-            { title: "ZOIC Cut-X", sub: "日製造型噴霧", img: "line_oa_chat_260116_170310_group_6.jpg" },
-            { title: "柔雅炭酸泉", sub: "深層清潔美肌", img: "line_oa_chat_260116_170310_group_7.jpg" }
+            { title: "ZOIC Cut-X", sub: "日本職人專用造型噴霧", img: "line_oa_chat_260116_170310_group_6.jpg" },
+            { title: "ZOIC炭酸泉", sub: "深層清潔美肌", img: "line_oa_chat_260116_170310_group_7.jpg" }
         ];
 
         const dogSpas = [
@@ -727,12 +750,12 @@
             { name: '義大利魚子醬 SPA', price: '+399' },
             { name: '義大利柑橘廢毛SPA', price: '+399' },
             { name: '義大利活化抗老百香果SPA', price: '+399' },
-            { name: '義大利客製化皮膚調理 SOA', price: '+399~599' },
+            { name: '義大利客製化皮膚調理 SPA', price: '+399~599' },
             { name: '美國去油護理服務/除廢毛 SPA', price: '+300~500' },
         ];
 
         const catSpas = [
-            { name: '義大利客製化皮膚調理 SOA', price: '+399' },
+            { name: '義大利客製化皮膚調理 SPA', price: '+399' },
             { name: '義大利魚子醬 SPA', price: '+399' },
             { name: '義大利柑橘/百香果代謝廢毛 SPA', price: '+399' },
             { name: '日本 ZOIC 碳酸 SPA', price: '+199' },
