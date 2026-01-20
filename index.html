@@ -282,22 +282,26 @@
                         <div class="w-1.5 h-1.5 bg-brand-primary rounded-full"></div> 一、飼主基本資料
                     </h3>
                     
-                    <div class="space-y-1">
+<div class="space-y-1">
                         <label class="text-xs font-bold text-brand-light ml-1">手機號碼 *</label>
                         <div class="flex gap-2">
                             <input type="tel" name="phone" id="phone" class="input-style" placeholder="09xxxxxxxx" required>
                             <button type="button" onclick="autoFillDemo()" class="whitespace-nowrap px-4 bg-brand-primary text-white text-xs font-bold rounded-xl shadow-sm active:scale-95 transition-transform">帶入紀錄</button>
                         </div>
+                        <p class="text-[12px] text-brand-light/80 pl-1 flex items-center gap-1 pt-1">
+                            <i data-lucide="info" class="w-3 h-3"></i>
+                            曾填寫的客戶，輸入號碼後點擊按鈕可帶入過往資料
+                        </p>
                     </div>
 
                     <div class="grid grid-cols-2 gap-3">
                         <div class="space-y-1">
                             <label class="text-xs font-bold text-brand-light ml-1">飼主姓名 *</label>
-                            <input type="text" name="ownerName" id="ownerName" class="input-style" placeholder="全名" required>
+                            <input type="text" name="ownerName" id="ownerName" class="input-style" placeholder="" required>
                         </div>
                         <div class="space-y-1">
                             <label class="text-xs font-bold text-brand-light ml-1">身分證字號 *</label>
-                            <input type="text" name="ownerId" id="ownerId" class="input-style" placeholder="需核對身分" required>
+                            <input type="text" name="ownerId" id="ownerId" class="input-style" placeholder="" required>
                         </div>
                     </div>
 
@@ -308,17 +312,17 @@
 
                     <div class="space-y-1">
                         <label class="text-xs font-bold text-brand-light ml-1">通訊地址 *</label>
-                        <input type="text" name="address" id="address" class="input-style" placeholder="完整地址" required>
+                        <input type="text" name="address" id="address" class="input-style" placeholder="" required>
                     </div>
 
                     <div class="grid grid-cols-2 gap-3 bg-brand-bg/50 p-3 rounded-xl border border-brand-primary/10">
                         <div class="space-y-1">
                             <label class="text-xs font-bold text-brand-dark ml-1">緊急聯絡人 *</label>
-                            <input type="text" name="emergencyName" id="emergencyName" class="input-style" placeholder="姓名" required>
+                            <input type="text" name="emergencyName" id="emergencyName" class="input-style" placeholder="" required>
                         </div>
                         <div class="space-y-1">
                             <label class="text-xs font-bold text-brand-dark ml-1">緊急電話 *</label>
-                            <input type="tel" name="emergencyPhone" id="emergencyPhone" class="input-style" placeholder="電話" required>
+                            <input type="tel" name="emergencyPhone" id="emergencyPhone" class="input-style" placeholder="" required>
                         </div>
                     </div>
 
@@ -511,32 +515,93 @@
                             <input type="text" name="otherServiceDetail" id="otherServiceDetail" class="input-style bg-white border-brand-primary/50" placeholder="請輸入您需要的服務項目...">
                         </div>
                     </div>
-                    <div class="space-y-4 mb-6">
+<div class="space-y-4 mb-6">
                         <h4 class="text-xs font-bold text-brand-text flex items-center gap-1">
                             <i data-lucide="sparkles" class="w-3 h-3 text-brand-primary"></i> 升級 SPA
                         </h4>
 
-<div id="dog-spa-list" class="animate-fade-in hidden">
-                            <h5 class="text-[10px] font-bold text-red-500 mb-2 pl-1">【狗狗專屬 SPA】</h5>
-                            <div class="bg-orange-50/80 p-3 rounded-xl border border-orange-100 mb-3 text-[11px] text-brand-dark leading-relaxed text-justify">
-                                <span class="font-bold text-orange-600 block mb-1">★ 本店採用：</span>
-                                狗狗基礎使用日本 ZOIC 洗護。想給寶貝們更進階的服務，可升級加購以下奢華 SPA 服務。
-                            </div>
-                            <div class="grid grid-cols-1 gap-2" id="dog-spa-container">
+                        <div id="dog-spa-list" class="hidden animate-fade-in">
+                            <div class="bg-white/40 backdrop-blur-sm border border-brand-primary/30 rounded-2xl overflow-hidden shadow-sm">
+                                <div class="bg-brand-primary/5 p-4 border-b border-brand-primary/10 space-y-3">
+                                    <div class="flex items-center gap-2">
+                                        <span class="bg-brand-primary text-white text-[10px] px-2 py-0.5 rounded-full font-bold shadow-sm">狗狗專屬</span>
+                                        <span class="text-xs font-bold text-brand-text">奢華護理方案</span>
+                                    </div>
+                                    
+                                    <div class="space-y-2 pl-1">
+                                        <div class="flex items-start gap-2">
+                                            <span class="text-[11px] font-black text-brand-primary shrink-0 mt-0.5 border border-brand-primary/30 px-1.5 rounded bg-white">基礎</span>
+                                            <p class="text-[11px] text-brand-dark leading-relaxed">
+                                                使用 <span class="font-bold text-brand-text">日本 ZOIC 柔順洗護</span>。
+                                            </p>
+                                        </div>
+                                        <div class="flex items-start gap-2">
+                                            <span class="text-[11px] font-black text-white shrink-0 mt-0.5 border border-brand-primary bg-brand-primary px-1.5 rounded">升級</span>
+                                            <p class="text-[11px] text-brand-dark leading-relaxed">
+                                                想給寶貝更進階的服務？<br>可於下方加購 <span class="font-bold text-brand-text">奢華 SPA 服務</span>。
+                                            </p>
+                                        </div>
+                                    </div>
                                 </div>
+                                <div class="p-3 grid grid-cols-1 gap-2 bg-white/20" id="dog-spa-container"></div>
+                            </div>
                         </div>
 
-                        <div id="cat-spa-list" class="animate-fade-in hidden">
-                            <h5 class="text-[10px] font-bold text-red-500 mb-2 pl-1">【貓咪專屬 SPA】</h5>
-                            <div class="bg-orange-50/80 p-3 rounded-xl border border-orange-100 mb-3 text-[11px] text-brand-dark leading-relaxed text-justify">
-                                <span class="font-bold text-orange-600 block mb-1">★ 本店採用：</span>
-                                貓咪基礎使用日本 ZOIC 貓咪沙龍 SPA (含有日本木天蓼草萃取，能讓貓咪愉悅放鬆的洗澡) 或 義大利進階貓咪沙龍洗護。<br>
-                                想給寶貝們更進階的服務，可升級加購以下奢華 SPA 服務。
-                            </div>
-                            <div class="grid grid-cols-1 gap-2" id="cat-spa-container">
+                        <div id="cat-spa-list" class="hidden animate-fade-in">
+                            <div class="bg-white/40 backdrop-blur-sm border border-brand-primary/30 rounded-2xl overflow-hidden shadow-sm">
+                                <div class="bg-[#E6CCCA]/20 p-4 border-b border-[#E6CCCA]/30 space-y-3">
+                                    <div class="flex items-center gap-2">
+                                        <span class="bg-brand-secondary text-brand-text text-[10px] px-2 py-0.5 rounded-full font-bold shadow-sm">貓咪專屬</span>
+                                        <span class="text-xs font-bold text-brand-text">奢華護理方案</span>
+                                    </div>
+
+                                    <div class="space-y-2 pl-1">
+                                        <div class="flex items-start gap-2">
+                                            <span class="text-[11px] font-black text-brand-secondary shrink-0 mt-0.5 border border-brand-secondary px-1.5 rounded bg-white">基礎</span>
+                                            <p class="text-[11px] text-brand-dark leading-relaxed text-justify">
+                                                使用 <span class="font-bold text-brand-text">日本 ZOIC 貓咪沙龍 SPA</span><br>
+                                                <span class="text-[10px] text-brand-light block mt-0.5">(含木天蓼萃取，能讓貓咪愉悅放鬆)。</span>
+                                            </p>
+                                        </div>
+                                        <div class="flex items-start gap-2">
+                                            <span class="text-[11px] font-black text-brand-text shrink-0 mt-0.5 border border-brand-secondary bg-brand-secondary px-1.5 rounded">升級</span>
+                                            <p class="text-[11px] text-brand-dark leading-relaxed text-justify">
+                                                想給寶貝 <span class="font-bold text-brand-text">義大利進階沙龍洗護</span><br>
+                                                可於下方加購 <span class="font-bold text-brand-text">奢華 SPA 服務</span>。
+                                            </p>
+                                        </div>
+                                    </div>
                                 </div>
+                                <div class="p-3 grid grid-cols-1 gap-2 bg-white/20" id="cat-spa-container"></div>
+                            </div>
                         </div>
-                    </div>
+
+<div class="bg-white/60 border border-brand-primary/30 rounded-xl p-5 space-y-4 shadow-sm mt-4">
+                        
+                        <div class="flex justify-between items-center text-xs text-brand-light">
+                            <span class="font-bold flex items-center gap-1"><i data-lucide="sparkles" class="w-3 h-3"></i> [升級項目] 小計</span>
+                            <span id="upgradeTotalDisplay" class="font-mono font-bold text-brand-text">$0</span>
+                        </div>
+
+                        <div class="space-y-1">
+                            <label class="text-xs font-bold text-brand-dark ml-1">基礎報價 (由店員告知後填寫) *</label>
+                            <div class="relative">
+                                <span class="absolute left-3 top-2.5 text-brand-light text-xs font-bold">$</span>
+                                <input type="number" id="basePrice" class="input-style pl-7 py-2 font-bold text-brand-text" placeholder="請輸入基礎金額" oninput="calculateTotal()">
+                            </div>
+                            <p class="text-[10px] text-red-500 font-bold bg-red-50 border border-red-100 px-2 py-1.5 rounded-lg flex items-start gap-1">
+                                <i data-lucide="alert-circle" class="w-3 h-3 shrink-0 mt-0.5"></i>
+                                此金額為基礎報價，若現場發現嚴重打結、寄生蟲等狀況，將另行告知加價。
+                            </p>
+                        </div>
+
+                        <div class="h-px bg-brand-primary/20 w-full border-t border-dashed border-brand-primary/30"></div>
+
+                        <div class="flex justify-between items-end">
+                            <span class="text-sm font-bold text-brand-dark">預估總金額</span>
+                            <span id="totalPriceDisplay" class="text-2xl font-black text-brand-text">$0</span>
+                        </div>
+                    </div>                    
 <div class="space-y-4 pt-4 border-t border-brand-primary/10">
                         <h4 class="text-xs font-bold text-brand-text flex items-center gap-1">
                             <i data-lucide="alert-circle" class="w-3 h-3 text-brand-primary"></i> 特殊服務
@@ -637,9 +702,29 @@
                                                 超過 1 小時以上，本店將先行 <span class="bg-red-200 text-red-900 px-1 rounded">安置犬貓</span> (提供水、飼料、貓砂)，屆時將收取必要之安置費用。
                                             </p>
                                         </div>
-                                    </div>
+</div>
                                 </li>
                             </ul>
+                        </div>
+                    </div>
+
+                    <div class="space-y-4 pt-4 border-t border-brand-primary/10">
+                        <h4 class="text-xs font-bold text-brand-text flex items-center gap-1">
+                            <i data-lucide="wallet" class="w-3 h-3 text-brand-primary"></i> 支付方式 *
+                        </h4>
+                        <div class="grid grid-cols-2 gap-3">
+                            <label class="option-card p-3 rounded-xl flex items-center justify-center gap-2 cursor-pointer group" onclick="updateRadioStyle(this)">
+                                <input type="radio" name="paymentMethod" value="現金" class="hidden" required>
+                                <div class="w-6 h-6 rounded-full bg-brand-bg flex items-center justify-center text-brand-light group-[.selected]:bg-brand-primary group-[.selected]:text-white transition-colors">
+                                    <i data-lucide="banknote" class="w-3.5 h-3.5"></i>
+                                </div>
+                                <span class="text-sm font-bold text-brand-text">現金支付</span>
+                            </label>
+
+                            <label class="option-card p-3 rounded-xl flex items-center justify-center gap-2 cursor-pointer group" onclick="updateRadioStyle(this)">
+                                <input type="radio" name="paymentMethod" value="LINE Pay" class="hidden">
+                                <img src="linepay.png" alt="LINE Pay" class="h-5 w-auto object-contain">
+                            </label>
                         </div>
                     </div>
                 </section>
@@ -800,7 +885,7 @@ function renderSpaList(id, list) {
             document.getElementById(id).innerHTML = list.map(spa => `
                 <label class="flex items-center justify-between p-3 rounded-xl border border-transparent hover:bg-white/80 bg-white/40 transition-all cursor-pointer">
                     <div class="flex items-center gap-3">
-                        <input type="checkbox" name="spaUpgrades" value="${spa.name}" class="accent-brand-primary">
+                        <input type="checkbox" name="spaUpgrades" value="${spa.name}" data-price="${spa.price}" onchange="calculateTotal()" class="accent-brand-primary">
                         <span class="text-xs font-bold text-brand-text">${spa.name}</span>
                     </div>
                     <span class="text-xs font-bold text-brand-primary">${spa.price}元</span>
@@ -976,7 +1061,55 @@ function renderSpaList(id, list) {
                 }
             }, 0);
         }
+// 新增：計算總金額功能
+        function calculateTotal() {
+            // 1. 取得基礎報價 (如果沒填則為 0)
+            let base = parseInt(document.getElementById('basePrice').value) || 0;
 
+            // 2. 計算升級項目
+            let upgradeMin = 0;
+            let upgradeMax = 0;
+            let hasVariable = false; // 是否有包含浮動價格的項目
+
+            document.querySelectorAll('input[name="spaUpgrades"]:checked').forEach(cb => {
+                // 處理價格字串：移除 '+' 和 '元' (例如: "+199" -> "199", "+399~599" -> "399~599")
+                let priceStr = cb.dataset.price.replace('+', '').replace(/元/g, '').trim();
+                
+                if (priceStr.includes('~')) {
+                    // 處理範圍價格 (例如 399~599)
+                    let parts = priceStr.split('~');
+                    let min = parseInt(parts[0]);
+                    let max = parseInt(parts[1]);
+                    upgradeMin += min;
+                    upgradeMax += max;
+                    hasVariable = true;
+                } else {
+                    // 處理固定價格
+                    let val = parseInt(priceStr);
+                    upgradeMin += val;
+                    upgradeMax += val;
+                }
+            });
+
+            // 3. 更新介面顯示
+            
+            // 升級小計顯示
+            let upgradeText = hasVariable ? `+$${upgradeMin} ~ $${upgradeMax}` : `+$${upgradeMin}`;
+            document.getElementById('upgradeTotalDisplay').innerText = upgradeText;
+
+            // 總金額顯示
+            let totalMin = base + upgradeMin;
+            let totalMax = base + upgradeMax;
+            
+            // 如果基礎價格是 0 且沒有選購升級，顯示 $0
+            if (totalMin === 0 && totalMax === 0) {
+                document.getElementById('totalPriceDisplay').innerText = "$0";
+                return;
+            }
+
+            let totalText = hasVariable ? `$${totalMin} ~ $${totalMax}` : `$${totalMin}`;
+            document.getElementById('totalPriceDisplay').innerText = totalText;
+        }
         // 9. 表單提交
         function handleFormSubmit(e) {
             e.preventDefault();
