@@ -122,18 +122,94 @@
             display: block; /* 只有 active 的顯示 */
         }
         
-        /* 簽名板樣式 */
-        .signature-pad {
-            touch-action: none;
-            background-color: #fff;
-            background-image: linear-gradient(#e5e7eb 1px, transparent 1px),
-            linear-gradient(90deg, #e5e7eb 1px, transparent 1px);
-            background-size: 20px 20px;
-        }
+/* 簽名板樣式 */
+.signature-pad {
+    touch-action: none;
+    background-color: #fff;
+    background-image: linear-gradient(#e5e7eb 1px, transparent 1px),
+    linear-gradient(90deg, #e5e7eb 1px, transparent 1px);
+    background-size: 20px 20px;
+}
+
+/* Toast 提示樣式 */
+.toast-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.toast {
+    min-width: 250px;
+    max-width: 400px;
+    padding: 16px 20px;
+    border-radius: 12px;
+    background: white;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transform: translateX(400px);
+    animation: slideIn 0.3s ease forwards;
+}
+
+@keyframes slideIn {
+    to {
+        transform: translateX(0);
+    }
+}
+
+.toast.removing {
+    animation: slideOut 0.3s ease forwards;
+}
+
+@keyframes slideOut {
+    to {
+        transform: translateX(400px);
+        opacity: 0;
+    }
+}
+
+.toast.success {
+    border-left: 4px solid #10b981;
+}
+
+.toast.error {
+    border-left: 4px solid #ef4444;
+}
+
+.toast.warning {
+    border-left: 4px solid #f59e0b;
+}
+
+.toast-icon {
+    width: 24px;
+    height: 24px;
+    flex-shrink: 0;
+}
+
+.toast-content {
+    flex: 1;
+}
+
+.toast-title {
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+
+.toast-message {
+    font-size: 14px;
+    color: #666;
+}
+
     </style>
 </head>
 <body class="min-h-screen pb-28 relative">
-
+<!-- Toast 容器 -->
+<div class="toast-container" id="toast-container"></div>
     <div class="fixed rounded-full blur-[120px] -z-10 opacity-40 bg-brand-secondary top-[-15%] right-[-25%] w-[500px] h-[500px] animate-float"></div>
     <div class="fixed rounded-full blur-[100px] -z-10 opacity-50 bg-[#CDB5A8] bottom-[5%] left-[-20%] w-[400px] h-[400px] animate-float" style="animation-direction: reverse;"></div>
 
@@ -333,7 +409,7 @@
 
                     <div class="space-y-1">
                         <label class="text-xs font-bold text-brand-light ml-1">指定就醫醫院</label>
-                        <input type="text" name="preferredClinic" id="preferredClinic" class="input-style" placeholder="若無請填無，將送往特約醫院">
+                        <input type="text" name="preferredClinic" id="preferredClinic" class="input-style" placeholder="若未填寫則送往特約醫院">
                     </div>
                 </section>
 
@@ -826,6 +902,57 @@
     </div>
 
     <script>
+// Toast 工具函數
+const toast = {
+    container: null,
+    
+    init() {
+        this.container = document.getElementById('toast-container');
+    },
+    
+    show(message, type = 'success', title = '') {
+        if (!this.container) this.init();
+        
+        const toastEl = document.createElement('div');
+        toastEl.className = `toast ${type}`;
+        
+        // 根據類型選擇圖標
+        let iconHtml = '';
+        switch(type) {
+            case 'success':
+                iconHtml = '<i data-lucide="check-circle" class="toast-icon text-green-500"></i>';
+                break;
+            case 'error':
+                iconHtml = '<i data-lucide="x-circle" class="toast-icon text-red-500"></i>';
+                break;
+            case 'warning':
+                iconHtml = '<i data-lucide="alert-triangle" class="toast-icon text-yellow-500"></i>';
+                break;
+        }
+        
+        toastEl.innerHTML = `
+            ${iconHtml}
+            <div class="toast-content">
+                ${title ? `<div class="toast-title">${title}</div>` : ''}
+                <div class="toast-message">${message}</div>
+            </div>
+        `;
+        
+        this.container.appendChild(toastEl);
+        
+        // 初始化圖標
+        lucide.createIcons();
+        
+        // 自動移除
+        setTimeout(() => {
+            toastEl.classList.add('removing');
+            setTimeout(() => {
+                toastEl.remove();
+            }, 300);
+        }, 3000);
+    }
+};
+
         // 應用程式主物件
         const app = {
             // 狀態變數
@@ -879,24 +1006,27 @@
                 ]
             },
 
-            // 初始化
-            init() {
-                // 初始化圖示
-                lucide.createIcons();
-                
-                // 渲染內容
-                this.renderBanner();
-                this.renderProducts();
-                this.renderSpaList('dog-spa-container', this.data.dogSpas);
-                this.renderSpaList('cat-spa-container', this.data.catSpas);
-                
-                // 檢查 Hash 路由
-                const hash = window.location.hash.replace('#', '');
-                if(hash) this.switchView(hash);
-                
-                // 初始化簽名板
-                this.signaturePad.init();
-            },
+// 初始化
+init() {
+    // 初始化圖示
+    lucide.createIcons();
+    
+    // 初始化Toast
+    toast.init();
+    
+    // 渲染內容
+    this.renderBanner();
+    this.renderProducts();
+    this.renderSpaList('dog-spa-container', this.data.dogSpas);
+    this.renderSpaList('cat-spa-container', this.data.catSpas);
+    
+    // 檢查 Hash 路由
+    const hash = window.location.hash.replace('#', '');
+    if(hash) this.switchView(hash);
+    
+    // 初始化簽名板
+    this.signaturePad.init();
+},
 
             // 渲染 Banner
             renderBanner() {
@@ -1013,26 +1143,27 @@
                 }
             },
 
-            // 帶入歷史資料 Demo
-            autoFillDemo() {
-                const phone = document.getElementById('phone').value;
-                if (phone === '0912345678') {
-                    alert('已找到歷史紀錄！自動帶入測試資料...');
-                    document.getElementById('ownerName').value = '測試飼主';
-                    document.getElementById('email').value = 'test@example.com';
-                    document.getElementById('ownerId').value = 'A123456789';
-                    document.getElementById('address').value = '台北市松山區測試路段';
-                    document.getElementById('emergencyName').value = '王小明';
-                    document.getElementById('emergencyPhone').value = '0987654321';
-                    document.getElementById('petName').value = '旺財';
-                    document.getElementById('breed').value = '柴犬';
-                    document.getElementById('ageYear').value = '5';
-                    document.getElementById('weight').value = '12';
-                    this.checkRisk(5);
-                } else {
-                    alert('查無此號碼 (測試號碼: 0912345678)');
-                }
-            },
+// 帶入歷史資料 Demo
+autoFillDemo() {
+    const phone = document.getElementById('phone').value;
+    if (phone === '0912345678') {
+        toast.show('已找到歷史紀錄！自動帶入測試資料...', 'success', '成功');
+        document.getElementById('ownerName').value = '測試飼主';
+        document.getElementById('email').value = 'test@example.com';
+        document.getElementById('ownerId').value = 'A123456789';
+        document.getElementById('address').value = '台北市松山區測試路段';
+        document.getElementById('emergencyName').value = '王小明';
+        document.getElementById('emergencyPhone').value = '0987654321';
+        document.getElementById('petName').value = '旺財';
+        document.getElementById('breed').value = '柴犬';
+        document.getElementById('ageYear').value = '5';
+        document.getElementById('weight').value = '12';
+        this.checkRisk(5);
+    } else {
+        toast.show('查無此號碼 (測試號碼: 0912345678)', 'warning', '查詢失敗');
+    }
+},
+
 
             // 通用單選按鈕樣式切換
             updateRadioStyle(label) {
@@ -1160,42 +1291,43 @@
                 document.getElementById('totalPriceDisplay').innerText = totalText;
             },
 
-            // 表單提交
-            handleFormSubmit(e) {
-                e.preventDefault();
-                // 這裡加入各種檢查
-                if (!this.state.lineConfirmed) {
-                    alert('請先確認已加入 LINE 官方帳號並傳送貼圖！');
-                    document.getElementById('view-grooming').scrollIntoView();
-                    return;
-                }
-                
-                // 檢查打結方案 (只有在勾選「疑似有打結」時才檢查)
-                const mattingCheckbox = document.querySelector('input[name="mattingSuspected"]');
-                if (mattingCheckbox && mattingCheckbox.checked) {
-                    const mattingChoice = document.querySelector('input[name="mattingChoice"]:checked');
-                    if (!mattingChoice) {
-                        alert('您勾選了「疑似有打結」，請在下方卷軸中選擇一種處理方案（方案一或方案二）。');
-                        return;
-                    }
-                }
+// 表單提交
+handleFormSubmit(e) {
+    e.preventDefault();
+    // 這裡加入各種檢查
+    if (!this.state.lineConfirmed) {
+        toast.show('請先確認已加入 LINE 官方帳號並傳送貼圖！', 'error', '未完成步驟');
+        document.getElementById('view-grooming').scrollIntoView();
+        return;
+    }
+    
+    // 檢查打結方案 (只有在勾選「疑似有打結」時才檢查)
+    const mattingCheckbox = document.querySelector('input[name="mattingSuspected"]');
+    if (mattingCheckbox && mattingCheckbox.checked) {
+        const mattingChoice = document.querySelector('input[name="mattingChoice"]:checked');
+        if (!mattingChoice) {
+            toast.show('您勾選了「疑似有打結」，請在下方卷軸中選擇一種處理方案（方案一或方案二）。', 'error', '請選擇處理方案');
+            return;
+        }
+    }
 
-                // 高風險檢查
-                const riskCheckbox = document.getElementById('risk-checkbox');
-                if (!document.getElementById('risk-warning').classList.contains('hidden') && !riskCheckbox.checked) {
-                    alert('請勾選同意高風險服務責任');
-                    return;
-                }
+    // 高風險檢查
+    const riskCheckbox = document.getElementById('risk-checkbox');
+    if (!document.getElementById('risk-warning').classList.contains('hidden') && !riskCheckbox.checked) {
+        toast.show('請勾選同意高風險服務責任', 'error', '未同意條款');
+        return;
+    }
 
-                // 檢查簽名
-                if(document.getElementById('signatureData').value === '') {
-                    alert('請進行數位簽名！');
-                    return;
-                }
+    // 檢查簽名
+    if(document.getElementById('signatureData').value === '') {
+        toast.show('請進行數位簽名！', 'error', '缺少簽名');
+        return;
+    }
 
-                alert('預約送出成功！(這是靜態頁面 Demo)');
-                this.switchView('home');
-            },
+    toast.show('預約送出成功！(這是靜態頁面 Demo)', 'success', '預約成功');
+    this.switchView('home');
+},
+
 
             // 簽名板功能
             signaturePad: {
@@ -1346,9 +1478,11 @@
                 
                 reset() {
                     if(confirm('確定要清除簽名並重新簽署嗎？')) {
-                        document.getElementById('signature-trigger').classList.remove('hidden');
-                        document.getElementById('signature-result').classList.add('hidden');
-                        document.getElementById('signatureData').value = '';
+    toast.show('已清除簽名，請重新簽署', 'warning', '清除簽名');
+    document.getElementById('signature-trigger').classList.remove('hidden');
+    document.getElementById('signature-result').classList.add('hidden');
+    document.getElementById('signatureData').value = '';
+
                     }
                 }
             }
