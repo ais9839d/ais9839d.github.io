@@ -323,70 +323,176 @@
                     </div>
                 </section>
 
-                <section class="glass-card p-6 space-y-5">
-                    <h3 class="text-sm font-bold flex items-center gap-2 text-brand-dark border-b border-brand-primary/10 pb-2">
-                        <div class="w-1.5 h-1.5 bg-brand-secondary rounded-full"></div> 二、寵物詳細資料
-                    </h3>
+<section class="glass-card p-6 space-y-5">
+    <h3 class="text-sm font-bold flex items-center gap-2 text-brand-dark border-b border-brand-primary/10 pb-2">
+        <div class="w-1.5 h-1.5 bg-brand-secondary rounded-full"></div> 二、寵物詳細資料
+    </h3>
 
-                    <div class="space-y-2">
-                        <label class="text-xs font-bold text-brand-light ml-1">寵物種類 *</label>
-                        <div class="flex gap-3">
-                            <label class="option-card flex-1 py-3 rounded-xl flex items-center justify-center gap-2 text-sm font-bold" onclick="selectSpecies('犬', this)">
-                                <input type="radio" name="petSpecies" value="犬" checked class="w-4 h-4 accent-brand-primary pointer-events-none"> 犬
-                            </label>
-                            <label class="option-card flex-1 py-3 rounded-xl flex items-center justify-center gap-2 text-sm font-bold" onclick="selectSpecies('貓', this)">
-                                <input type="radio" name="petSpecies" value="貓" class="w-4 h-4 accent-brand-primary pointer-events-none"> 貓
-                            </label>
-                        </div>
-                    </div>
+    <div class="grid grid-cols-2 gap-3">
+        <div class="space-y-1">
+            <label class="text-xs font-bold text-brand-light ml-1">名字 *</label>
+            <input type="text" name="petName" id="petName" class="input-style" required>
+        </div>
+        <div class="space-y-1">
+            <label class="text-xs font-bold text-brand-light ml-1">品種 *</label>
+            <input type="text" name="breed" id="breed" class="input-style" placeholder="例: 貴賓" required>
+        </div>
+    </div>
+    
+    <div class="grid grid-cols-2 gap-3">
+        <div class="space-y-1">
+            <label class="text-xs font-bold text-brand-light ml-1">體重 (kg) *</label>
+            <input type="number" step="0.1" name="weight" id="weight" class="input-style" required>
+        </div>
+        <div class="space-y-1">
+            <label class="text-xs font-bold text-brand-light ml-1">年齡 (歲) *</label>
+            <input type="number" name="ageYear" id="ageYear" class="input-style text-center" required oninput="checkRisk(this.value)">
+        </div>
+    </div>
 
-                    <div class="grid grid-cols-2 gap-3">
-                        <div class="space-y-1">
-                            <label class="text-xs font-bold text-brand-light ml-1">名字 *</label>
-                            <input type="text" name="petName" id="petName" class="input-style" required>
-                        </div>
-                        <div class="space-y-1">
-                            <label class="text-xs font-bold text-brand-light ml-1">品種/顏色 *</label>
-                            <input type="text" name="breed" id="breed" class="input-style" placeholder="例: 貴賓/紅色" required>
-                        </div>
-                    </div>
-                    
-                    <div class="grid grid-cols-2 gap-3">
-                        <div class="space-y-1">
-                            <label class="text-xs font-bold text-brand-light ml-1">年齡 (歲) *</label>
-                            <input type="number" name="ageYear" id="ageYear" class="input-style text-center" placeholder="歲" required oninput="checkRisk(this.value)">
-                        </div>
-                        <div class="space-y-1">
-                            <label class="text-xs font-bold text-brand-light ml-1">體重 (kg) *</label>
-                            <input type="number" step="0.1" name="weight" id="weight" class="input-style" required>
-                        </div>
-                    </div>
+    <div class="grid grid-cols-2 gap-3">
+        <div class="space-y-1">
+            <label class="text-xs font-bold text-brand-light ml-1">性別 *</label>
+            <div class="flex gap-2">
+                <label class="option-card flex-1 py-2 rounded-xl flex items-center justify-center gap-1 text-xs font-bold" onclick="updateRadioStyle(this)">
+                    <input type="radio" name="gender" value="公" class="hidden" required> 公
+                </label>
+                <label class="option-card flex-1 py-2 rounded-xl flex items-center justify-center gap-1 text-xs font-bold" onclick="updateRadioStyle(this)">
+                    <input type="radio" name="gender" value="母" class="hidden"> 母
+                </label>
+            </div>
+        </div>
+        <div class="space-y-1">
+            <label class="text-xs font-bold text-brand-light ml-1">結紮 *</label>
+            <div class="flex gap-2">
+                <label class="option-card flex-1 py-2 rounded-xl flex items-center justify-center gap-1 text-xs font-bold" onclick="updateRadioStyle(this)">
+                    <input type="radio" name="ligation" value="是" class="hidden" required> 是
+                </label>
+                <label class="option-card flex-1 py-2 rounded-xl flex items-center justify-center gap-1 text-xs font-bold" onclick="updateRadioStyle(this)">
+                    <input type="radio" name="ligation" value="否" class="hidden"> 否
+                </label>
+            </div>
+        </div>
+    </div>
 
-                    <div class="space-y-2 pt-2 border-t border-brand-primary/10">
-                        <label class="text-xs font-bold text-brand-light ml-1">晶片號碼 *</label>
-                        <div class="flex flex-col gap-2">
-                            <select name="chipStatus" class="input-style" onchange="document.getElementById('chipIdInput').style.display = this.value === '有晶片' ? 'block' : 'none'">
-                                <option value="有晶片">有晶片</option>
-                                <option value="有晶片(號碼不詳)">有晶片(號碼不詳)</option>
-                                <option value="無晶片">無晶片</option>
-                            </select>
-                            <input type="text" id="chipIdInput" class="input-style" placeholder="請輸入完整晶片號碼">
-                        </div>
-                    </div>
-                </section>
+    <div class="space-y-2 pt-2 border-t border-brand-primary/10">
+        <label class="text-xs font-bold text-brand-light ml-1">過往病史 *</label>
+        <div class="flex gap-2 mb-2">
+            <label class="option-card flex-1 py-2 rounded-xl flex items-center justify-center gap-1 text-xs font-bold" onclick="updateRadioStyle(this); toggleInput('medical-input', true)">
+                <input type="radio" name="medicalHistory" value="有" class="hidden"> 有
+            </label>
+            <label class="option-card flex-1 py-2 rounded-xl flex items-center justify-center gap-1 text-xs font-bold" onclick="updateRadioStyle(this); toggleInput('medical-input', false)">
+                <input type="radio" name="medicalHistory" value="無" class="hidden" checked> 無
+            </label>
+
+        </div>
+        <input type="text" id="medical-input" name="medicalDetail" class="input-style hidden" placeholder="請說明過往病史...">
+    </div>
+
+    <div class="space-y-2">
+        <label class="text-xs font-bold text-brand-light ml-1">社交狀況 *</label>
+        <div class="grid grid-cols-2 gap-2">
+            <label class="option-card p-3 rounded-xl flex items-center justify-center text-center text-[11px] font-bold leading-tight" onclick="updateRadioStyle(this)">
+                <input type="radio" name="socialStatus" value="有攻擊性" class="hidden" required> 有攻擊性
+            </label>
+            <label class="option-card p-3 rounded-xl flex items-center justify-center text-center text-[11px] font-bold leading-tight" onclick="updateRadioStyle(this)">
+                <input type="radio" name="socialStatus" value="無攻擊性" class="hidden"> 無攻擊性
+            </label>
+            <label class="option-card p-3 rounded-xl flex items-center justify-center text-center text-[11px] font-bold leading-tight" onclick="updateRadioStyle(this)">
+                <input type="radio" name="socialStatus" value="可與狗玩" class="hidden"> 可與狗朋友們<br>一起玩耍
+            </label>
+            <label class="option-card p-3 rounded-xl flex items-center justify-center text-center text-[11px] font-bold leading-tight" onclick="updateRadioStyle(this)">
+                <input type="radio" name="socialStatus" value="不可與狗玩" class="hidden"> 不能與狗朋友們<br>一起玩耍
+            </label>
+        </div>
+    </div>
+
+    <div class="space-y-2">
+        <label class="text-xs font-bold text-brand-light ml-1">寵物美容性情與攻擊性評估 *</label>
+        <div class="space-y-2">
+            <label class="option-card p-3 rounded-xl flex items-start gap-3 cursor-pointer group" onclick="updateRadioStyle(this)">
+                <input type="radio" name="temperament" value="天使寶寶" class="hidden" required>
+                <div class="w-2 h-2 rounded-full bg-brand-primary mt-1.5 shrink-0 group-[.selected]:bg-brand-dark"></div>
+                <div>
+                    <span class="text-xs font-bold text-brand-text block">天使寶寶</span>
+                    <span class="text-[10px] text-brand-light">個性溫和，無任何攻擊紀錄，也不怕生。</span>
+                </div>
+            </label>
+            
+            <label class="option-card p-3 rounded-xl flex items-start gap-3 cursor-pointer group" onclick="updateRadioStyle(this)">
+                <input type="radio" name="temperament" value="有點緊張" class="hidden">
+                <div class="w-2 h-2 rounded-full bg-brand-primary mt-1.5 shrink-0 group-[.selected]:bg-brand-dark"></div>
+                <div>
+                    <span class="text-xs font-bold text-brand-text block">有點緊張</span>
+                    <span class="text-[10px] text-brand-light">膽小怕生，可能會低吼或閃躲，但未曾咬人。</span>
+                </div>
+            </label>
+
+            <label class="option-card p-3 rounded-xl flex items-start gap-3 cursor-pointer group border-l-4 border-l-transparent hover:border-l-red-400" onclick="updateRadioStyle(this)">
+                <input type="radio" name="temperament" value="恰北北/護主" class="hidden">
+                <div class="w-2 h-2 rounded-full bg-red-400 mt-1.5 shrink-0"></div>
+                <div>
+                    <span class="text-xs font-bold text-red-700 block">恰北北 / 護主</span>
+                    <span class="text-[10px] text-brand-light">對於特定部位敏感，或看到陌生人/狗貓會兇，曾有攻擊或試圖咬人紀錄。</span>
+                    <span class="text-[10px] font-bold text-red-500 block mt-1 bg-red-50 px-2 py-1 rounded">⚠️ 請務必告知讓我們做好防護準備</span>
+                </div>
+            </label>
+        </div>
+    </div>
+
+    <div class="space-y-2 pt-2 border-t border-brand-primary/10">
+        <label class="text-xs font-bold text-brand-light ml-1">晶片號碼 *</label>
+        <div class="grid grid-cols-3 gap-2 mb-2">
+             <label class="option-card py-2 rounded-xl flex items-center justify-center text-[10px] font-bold" onclick="updateRadioStyle(this); toggleInput('chip-input', true)">
+                <input type="radio" name="chipStatus" value="有晶片" class="hidden" required> 有晶片
+            </label>
+            <label class="option-card py-2 rounded-xl flex items-center justify-center text-[10px] font-bold" onclick="updateRadioStyle(this); toggleInput('chip-input', false)">
+                <input type="radio" name="chipStatus" value="有晶片(號碼不詳)" class="hidden"> 有晶片<br>(號碼不詳)
+            </label>
+            <label class="option-card py-2 rounded-xl flex items-center justify-center text-[10px] font-bold" onclick="updateRadioStyle(this); toggleInput('chip-input', false)">
+                <input type="radio" name="chipStatus" value="無晶片" class="hidden"> 無晶片
+            </label>
+        </div>
+        <input type="text" id="chip-input" name="chipId" class="input-style hidden" placeholder="請輸入完整晶片號碼">
+    </div>
+</section>
 
                 <section class="glass-card p-6 border border-brand-primary/20 bg-white/60">
                     <h3 class="text-sm font-bold flex items-center gap-2 text-brand-dark mb-4">
                         <div class="w-1.5 h-1.5 bg-brand-primary rounded-full"></div> 服務項目與計價
                     </h3>
                     
-                    <div class="grid grid-cols-2 gap-3 mb-6">
-                         <label class="flex items-center gap-2"><input type="checkbox" name="serviceType" value="洗澡"> <span class="text-xs">洗澡</span></label>
-                        <label class="flex items-center gap-2"><input type="checkbox" name="serviceType" value="大美容"> <span class="text-xs">大美容</span></label>
-                        <label class="flex items-center gap-2"><input type="checkbox" name="serviceType" value="小美容"> <span class="text-xs">小美容</span></label>
-                        <label class="flex items-center gap-2"><input type="checkbox" name="serviceType" value="住宿"> <span class="text-xs">住宿</span></label>
+<div class="grid grid-cols-2 gap-3 mb-3">
+                        <label class="option-card relative p-4 rounded-2xl flex flex-col items-center justify-center gap-2 text-center h-32 group" onclick="toggleOtherInput(false)">
+                            <input type="radio" name="serviceType" value="精緻洗澡洗+護" class="absolute opacity-0 w-full h-full cursor-pointer" checked>
+                            <i data-lucide="droplets" class="w-8 h-8 text-brand-primary group-hover:scale-110 transition-transform"></i>
+                            <div>
+                                <h4 class="text-sm font-bold text-brand-text">精緻洗護</h4>
+                                <p class="text-[10px] text-brand-light mt-1 leading-tight">二次洗護、剪指甲、清耳朵、剃雜毛、肛門腺、臉部整理</p>
+                            </div>
+                        </label>
+
+                        <label class="option-card relative p-4 rounded-2xl flex flex-col items-center justify-center gap-2 text-center h-32 group" onclick="toggleOtherInput(false)">
+                            <input type="radio" name="serviceType" value="精緻造型剪毛" class="absolute opacity-0 w-full h-full cursor-pointer">
+                            <i data-lucide="scissors" class="w-8 h-8 text-brand-primary group-hover:scale-110 transition-transform"></i>
+                            <div>
+                                <h4 class="text-sm font-bold text-brand-text">精緻修剪</h4>
+                                <p class="text-[10px] text-brand-light mt-1 leading-tight">精緻洗護 + 造型修剪</p>
+                            </div>
+                        </label>
                     </div>
 
+                    <div class="mb-6 space-y-3">
+                        <label class="option-card relative p-3 rounded-xl flex items-center justify-center gap-2 text-center group" onclick="toggleOtherInput(true)">
+                            <input type="radio" name="serviceType" value="其他項目" class="absolute opacity-0 w-full h-full cursor-pointer">
+                            <span class="text-sm font-bold text-brand-text">其他項目</span>
+                            <i data-lucide="more-horizontal" class="w-4 h-4 text-brand-primary"></i>
+                        </label>
+
+                        <div id="other-input-container" class="hidden animate-fade-in">
+                            <input type="text" name="otherServiceDetail" id="otherServiceDetail" class="input-style bg-white border-brand-primary/50" placeholder="請輸入您需要的服務項目...">
+                        </div>
+                    </div>
                     <div class="space-y-4 mb-6">
                         <h4 class="text-xs font-bold text-brand-text flex items-center gap-1">
                             <i data-lucide="sparkles" class="w-3 h-3 text-brand-primary"></i> 升級 SPA
@@ -408,31 +514,109 @@
                                 </div>
                         </div>
                     </div>
+<div class="space-y-4 pt-4 border-t border-brand-primary/10">
+                        <h4 class="text-xs font-bold text-brand-text flex items-center gap-1">
+                            <i data-lucide="alert-circle" class="w-3 h-3 text-brand-primary"></i> 特殊服務
+                        </h4>
 
-                    <div class="bg-brand-bg rounded-xl p-4 border border-brand-primary/10 space-y-4">
-                        <div>
-                            <h5 class="text-xs font-bold text-red-500 mb-2">特殊服務：毛髮打結處理</h5>
-                            <label class="flex items-center gap-2 cursor-pointer bg-red-50 p-2 rounded-lg border border-red-100">
-                                <input type="checkbox" name="hasMatting" class="accent-red-500 w-4 h-4">
-                                <span class="text-[11px] font-bold text-red-700">疑似有打結 (現場評估 $300~$2000)</span>
-                            </label>
+                        <label class="option-card p-4 rounded-xl flex items-center gap-3 cursor-pointer group transition-all" onclick="toggleMatting(this)">
+                            <input type="checkbox" name="mattingSuspected" class="accent-brand-primary w-4 h-4">
+                            <div class="flex-1">
+                                <span class="text-sm font-bold text-brand-text flex items-center gap-2">
+                                    疑似有打結 
+                                    <span class="text-[10px] font-normal text-brand-light bg-brand-primary/10 px-2 rounded-full">需現場評估</span>
+                                </span>
+                                <span class="text-[11px] text-brand-primary font-bold mt-0.5 block">現場評估拆結費用 300元～2000元</span>
+                            </div>
+                            <i data-lucide="chevron-down" class="w-4 h-4 text-brand-light transition-transform duration-300" id="matting-arrow"></i>
+                        </label>
+
+<div id="matting-details" class="hidden transition-all duration-300 ease-in-out">
+                            <div class="bg-white/60 rounded-xl border border-brand-primary/20 p-4 space-y-3 relative">
+                                
+                                <div class="space-y-4">
+                                    <div class="space-y-2">
+                                        <h5 class="text-xs font-bold text-brand-dark border-l-4 border-brand-primary pl-2">毛髮打結處理方式（請擇一勾選）</h5>
+                                        <p class="text-[11px] text-brand-light leading-relaxed text-justify">
+                                            如毛孩於美容過程中發現有毛髮打結、糾結或毛球情形，飼主同意由本店依下列方式處理，並自行勾選確認：
+                                        </p>
+                                    </div>
+
+                                    <div class="space-y-3">
+                                        <label class="block p-3 rounded-lg border border-brand-primary/10 bg-white/80 cursor-pointer hover:border-brand-primary/50 transition-colors">
+                                            <div class="flex items-start gap-3">
+                                                <input type="radio" name="mattingChoice" value="拆結處理" class="mt-1 accent-brand-primary shrink-0 w-4 h-4">
+                                                <div class="space-y-1">
+                                                    <span class="text-xs font-bold text-brand-text block">方案一 | 拆結處理 (需另計費)</span>
+                                                    <p class="text-[10px] text-brand-light leading-relaxed text-justify opacity-80">
+                                                        本人同意由美容師進行拆結處理，並願意支付拆結費用。本人了解拆結過程中可能產生毛髮斷裂、毛量減少或外觀不均屬正常情況，並同意不因此提出異議。<br>
+                                                        <span class="text-red-500 font-bold">拆結費用為 NT$300～NT$2000不等</span>，將依毛髮打結之嚴重程度、範圍及實際施作時間評估。<br>
+                                                        本店將於美容開始前說明並當場報價，經飼主同意後才會進行，本人了解並同意本店不會於美容過程中臨時加價或就地起價。
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </label>
+
+                                        <label class="block p-3 rounded-lg border border-brand-primary/10 bg-white/80 cursor-pointer hover:border-brand-primary/50 transition-colors">
+                                            <div class="flex items-start gap-3">
+                                                <input type="radio" name="mattingChoice" value="直接修剪" class="mt-1 accent-brand-primary shrink-0 w-4 h-4">
+                                                <div class="space-y-1">
+                                                    <span class="text-xs font-bold text-brand-text block">方案二 | 不拆結，直接修剪</span>
+                                                    <p class="text-[10px] text-brand-light leading-relaxed text-justify opacity-80">
+                                                        本人不願意支付拆結費用，同意美容師於遇到打結時，直接修剪糾結毛髮。<br>
+                                                        本人了解修剪後外觀可能出現長短不一、局部稀疏或不平整之情形，並表示可接受，不因此提出異議。
+                                    </p>
+                                                </div>
+                                            </div>
+                                        </label>
+                                    </div>
+
+                                    <div class="bg-brand-bg/80 p-3 rounded-lg space-y-2 border border-brand-primary/10">
+                                        <div class="space-y-1">
+                                            <span class="text-[10px] font-bold text-brand-dark block">補充說明一：</span>
+                                            <p class="text-[10px] text-brand-light leading-relaxed text-justify">
+                                                飼主了解並同意，實際處理方式仍將由美容師依毛孩當下毛況、皮膚狀態及安全考量，進行專業判斷並採取最適合之處理方式。
+                                            </p>
+                                        </div>
+                                        <div class="space-y-1">
+                                            <span class="text-[10px] font-bold text-brand-dark block">補充說明二：</span>
+                                            <p class="text-[10px] text-brand-light leading-relaxed text-justify">
+                                                如美容師評估毛髮打結情況已嚴重影響毛孩皮膚健康，或在處理過程中可能造成明顯疼痛、高度壓力、受傷風險，基於動物福利與安全考量，本店保有拒絕繼續美容或中止服務之權利。<br>
+                                                飼主了解並同意，上述情況不視為本店違約，並願意配合後續適當處理建議（如直接剃光）。
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        <div class="border border-red-200 rounded-xl bg-white overflow-hidden shadow-sm">
-                             <div class="h-32 overflow-y-auto p-3 text-[10px] text-slate-600 bg-slate-50/30">
-                                 <p class="mb-2">如毛孩於美容過程中發現有毛髮打結，飼主同意本店依下列方式處理：</p>
-                                 <ul class="list-disc pl-4 space-y-1">
-                                     <li><strong>方案一：拆結</strong> (需支付額外費用，可能造成毛量減少)</li>
-                                     <li><strong>方案二：直接修剪</strong> (不拆結，剃除打結處，外觀可能不均)</li>
-                                 </ul>
-                             </div>
-                             <div class="p-2 bg-red-50/50 border-t border-red-100 grid grid-cols-1 gap-2">
-                                <label class="flex items-center gap-2 text-[11px] p-2 hover:bg-white rounded cursor-pointer">
-                                    <input type="radio" name="mattingChoice" value="demat"> 方案一：同意拆結
-                                </label>
-                                <label class="flex items-center gap-2 text-[11px] p-2 hover:bg-white rounded cursor-pointer">
-                                    <input type="radio" name="mattingChoice" value="shave"> 方案二：不同意拆結 (直接修剪)
-                                </label>
-                             </div>
+                    </div>
+
+                    <div class="space-y-4 pt-4 border-t border-brand-primary/10">
+                        <h4 class="text-xs font-bold text-brand-text flex items-center gap-1">
+                            <i data-lucide="clock" class="w-3 h-3 text-brand-primary"></i> 逾時與安置費用說明
+                        </h4>
+                        
+                        <div class="bg-[#FFF9F2] border border-[#E6CCCA]/50 rounded-xl p-4 relative overflow-hidden">
+                            <ul class="space-y-3">
+                                <li class="flex items-center gap-2">
+                                    <span class="bg-[#8A7B70] text-white text-[10px] px-2 py-0.5 rounded font-bold shrink-0">1小時內</span>
+                                    <span class="text-xs text-brand-text font-bold">免收費。</span>
+                                </li>
+                                <li class="flex items-center gap-2">
+                                    <span class="bg-[#C7B299] text-white text-[10px] px-2 py-0.5 rounded font-bold shrink-0">超過1小時</span>
+                                    <span class="text-xs text-brand-text font-bold">以 1 小時計算 ($200/hr)。</span>
+                                </li>
+                                <li class="pt-2 mt-1">
+                                    <div class="bg-red-50 border border-red-200 rounded-lg p-3 shadow-sm">
+                                        <div class="flex items-start gap-2">
+                                            <i data-lucide="alert-triangle" class="w-4 h-4 text-red-500 shrink-0 mt-0.5"></i>
+                                            <p class="text-[11px] text-red-800 leading-relaxed text-justify font-bold">
+                                                超過 1 小時以上，本店將先行 <span class="bg-red-200 text-red-900 px-1 rounded">安置犬貓</span> (提供水、飼料、貓砂)，屆時將收取必要之安置費用。
+                                            </p>
+                                        </div>
+                                    </div>
+                                </li>
+                            </ul>
                         </div>
                     </div>
                 </section>
@@ -455,12 +639,51 @@
                         </label>
                     </div>
 
-                    <label class="flex items-start gap-3 p-2 cursor-pointer mt-2 bg-white/50 rounded-xl">
+<label class="flex items-start gap-3 p-2 cursor-pointer mt-2 bg-white/50 rounded-xl">
                         <input type="checkbox" id="agreement" class="mt-1 w-4 h-4 accent-brand-primary" required>
                         <span class="text-xs font-bold text-brand-text pt-0.5">本人已詳閱並同意以上契約內容</span>
                     </label>
 
-                    <button type="submit" class="w-full bg-brand-text text-white py-4 rounded-xl font-bold flex items-center justify-center gap-2 shadow-lg active:scale-95 transition-all hover:bg-brand-dark">
+                    <div class="space-y-2 pt-4 border-t border-brand-primary/10">
+                        <label class="text-xs font-bold text-brand-dark flex items-center gap-1">
+                            <i data-lucide="pen-tool" class="w-3 h-3"></i> 數位簽名 *
+                        </label>
+
+                        <div id="signature-trigger" onclick="openSignaturePad()" class="w-full h-32 rounded-xl border-2 border-dashed border-brand-primary/30 bg-white/40 flex flex-col items-center justify-center gap-2 cursor-pointer hover:bg-white/60 hover:border-brand-primary transition-all group">
+                            <div class="w-10 h-10 rounded-full bg-brand-primary/10 flex items-center justify-center text-brand-primary group-hover:scale-110 transition-transform">
+                                <i data-lucide="pen-tool" class="w-5 h-5"></i>
+                            </div>
+                            <span class="text-xs font-bold text-brand-light group-hover:text-brand-text">點擊此處開始簽名</span>
+                            <span class="text-[10px] text-brand-primary/60">系統將開啟全螢幕簽名板</span>
+                        </div>
+                        
+                        <div id="signature-result" class="hidden relative group animate-fade-in">
+                            <div class="w-full bg-white border border-brand-primary/20 rounded-xl p-4 relative overflow-hidden shadow-sm">
+                                <button type="button" onclick="resetSignature()" class="absolute top-2 right-2 p-2 bg-gray-50 text-gray-400 hover:bg-red-50 hover:text-red-500 rounded-lg transition-colors z-20">
+                                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                </button>
+                                
+                                <div class="flex justify-center my-1 relative z-10 h-20">
+                                    <img id="sig-image" src="" alt="您的簽名" class="h-full object-contain">
+                                </div>
+                                
+                                <div class="h-px bg-brand-primary/10 w-full my-2"></div>
+                                
+                                <div class="flex items-center justify-between gap-2">
+                                    <div class="bg-[#06C755]/10 text-[#06C755] px-2 py-1 rounded-md text-[10px] font-black flex items-center gap-1 border border-[#06C755]/20">
+                                        <i data-lucide="check-circle" class="w-3 h-3"></i> 已簽署
+                                    </div>
+                                    <div class="flex items-center gap-1 text-[10px] text-gray-400 font-mono bg-gray-50 px-2 py-1 rounded">
+                                        <i data-lucide="clock" class="w-3 h-3"></i>
+                                        <span id="sig-timestamp">--:--:--</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <input type="hidden" name="signatureData" id="signatureData" required>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="w-full bg-brand-text text-white py-4 rounded-xl font-bold flex items-center justify-center gap-2 shadow-lg active:scale-95 transition-all hover:bg-brand-dark mt-4">
                         <i data-lucide="check-circle" class="w-4 h-4"></i> 確認送出預約
                     </button>
                 </section>
@@ -505,7 +728,7 @@
             { name: '義大利柑橘廢毛SPA', price: '+399' },
             { name: '義大利活化抗老百香果SPA', price: '+399' },
             { name: '義大利客製化皮膚調理 SOA', price: '+399~599' },
-            { name: '美國去油護理服務/除廢毛 SPA', price: '300~500' },
+            { name: '美國去油護理服務/除廢毛 SPA', price: '+300~500' },
         ];
 
         const catSpas = [
@@ -514,7 +737,7 @@
             { name: '義大利柑橘/百香果代謝廢毛 SPA', price: '+399' },
             { name: '日本 ZOIC 碳酸 SPA', price: '+199' },
             { name: '日本頂級 SKIMO 奈米 SPA', price: '+399' },
-            { name: '美國去油護理服務/除廢毛 SPA', price: '300~500' },
+            { name: '美國去油護理服務/除廢毛 SPA', price: '+300~500' },
         ];
 
         // 3. 初始化渲染函式
@@ -550,16 +773,42 @@
             if(hash) switchView(hash);
         }
 
-        function renderSpaList(id, list) {
+function renderSpaList(id, list) {
             document.getElementById(id).innerHTML = list.map(spa => `
                 <label class="flex items-center justify-between p-3 rounded-xl border border-transparent hover:bg-white/80 bg-white/40 transition-all cursor-pointer">
                     <div class="flex items-center gap-3">
                         <input type="checkbox" name="spaUpgrades" value="${spa.name}" class="accent-brand-primary">
                         <span class="text-xs font-bold text-brand-text">${spa.name}</span>
                     </div>
-                    <span class="text-xs font-bold text-brand-primary">${spa.price}</span>
+                    <span class="text-xs font-bold text-brand-primary">${spa.price}元</span>
                 </label>
             `).join('');
+        }
+
+        // 新增：控制其他項目輸入框顯示
+        function toggleOtherInput(show) {
+            const container = document.getElementById('other-input-container');
+            const input = document.getElementById('otherServiceDetail');
+            
+            // 更新卡片選中樣式
+            document.querySelectorAll('input[name="serviceType"]').forEach(radio => {
+                const card = radio.closest('.option-card');
+                if(radio.checked) {
+                    card.classList.add('selected', 'bg-white', 'border-brand-primary', 'shadow-md');
+                } else {
+                    card.classList.remove('selected', 'bg-white', 'border-brand-primary', 'shadow-md');
+                }
+            });
+
+            if (show) {
+                container.classList.remove('hidden');
+                input.required = true;
+                setTimeout(() => input.focus(), 100);
+            } else {
+                container.classList.add('hidden');
+                input.required = false;
+                input.value = ''; // 切換掉時清空輸入
+            }
         }
 
         // 4. 視圖切換邏輯
@@ -656,6 +905,54 @@
                 alert('查無此號碼 (測試號碼: 0912345678)');
             }
         }
+// 新增：通用單選按鈕樣式切換
+        function updateRadioStyle(label) {
+            // 找到同組的所有 radio label
+            const radioName = label.querySelector('input').name;
+            document.querySelectorAll(`input[name="${radioName}"]`).forEach(input => {
+                const parent = input.closest('.option-card');
+                if (parent) parent.classList.remove('selected', 'bg-white', 'border-brand-primary', 'shadow-md');
+            });
+            // 點亮自己
+            label.classList.add('selected', 'bg-white', 'border-brand-primary', 'shadow-md');
+            label.querySelector('input').checked = true;
+        }
+
+        // 新增：切換輸入框顯示 (用於病史與晶片)
+        function toggleInput(elementId, show) {
+            const el = document.getElementById(elementId);
+            if (show) {
+                el.classList.remove('hidden');
+                el.required = true;
+                setTimeout(() => el.focus(), 100);
+            } else {
+                el.classList.add('hidden');
+                el.required = false;
+                el.value = '';
+            }
+        }
+// 新增：切換打結選項顯示
+        function toggleMatting(label) {
+            const checkbox = label.querySelector('input[type="checkbox"]');
+            const details = document.getElementById('matting-details');
+            const arrow = document.getElementById('matting-arrow');
+
+            // 使用 setTimeout 確保取得到點擊後的 checked 狀態
+            setTimeout(() => {
+                if (checkbox.checked) {
+                    details.classList.remove('hidden');
+                    arrow.style.transform = 'rotate(180deg)';
+                    label.classList.add('selected', 'bg-white', 'border-brand-primary', 'shadow-md');
+                } else {
+                    details.classList.add('hidden');
+                    arrow.style.transform = 'rotate(0deg)';
+                    label.classList.remove('selected', 'bg-white', 'border-brand-primary', 'shadow-md');
+                    
+                    // 取消勾選時，清空裡面的選擇，避免誤判
+                    document.querySelectorAll('input[name="mattingChoice"]').forEach(r => r.checked = false);
+                }
+            }, 0);
+        }
 
         // 9. 表單提交
         function handleFormSubmit(e) {
@@ -667,27 +964,168 @@
                 return;
             }
             
-            // 檢查打結方案
-            const matting = document.querySelector('input[name="mattingChoice"]:checked');
-            if (!matting) {
-                alert('請選擇「毛髮打結處理方式」');
-                return;
+// 檢查打結方案 (只有在勾選「疑似有打結」時才檢查)
+            const mattingCheckbox = document.querySelector('input[name="mattingSuspected"]');
+            if (mattingCheckbox && mattingCheckbox.checked) {
+                const mattingChoice = document.querySelector('input[name="mattingChoice"]:checked');
+                if (!mattingChoice) {
+                    alert('您勾選了「疑似有打結」，請在下方卷軸中選擇一種處理方案（方案一或方案二）。');
+                    return;
+                }
             }
 
-            // 高風險檢查
+// 高風險檢查
             const riskCheckbox = document.getElementById('risk-checkbox');
             if (!document.getElementById('risk-warning').classList.contains('hidden') && !riskCheckbox.checked) {
                 alert('請勾選同意高風險服務責任');
                 return;
             }
 
+            // 新增：檢查簽名
+            if(document.getElementById('signatureData').value === '') {
+                alert('請進行數位簽名！');
+                return;
+            }
+
             alert('預約送出成功！(這是靜態頁面 Demo)');
             switchView('home');
         }
+// --- 數位簽名功能 ---
+        let canvas, ctx, isDrawing = false;
 
+        function openSignaturePad() {
+            const modal = document.getElementById('signature-modal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            document.body.style.overflow = 'hidden'; // 禁止背景捲動
+            
+            // 初始化 Canvas
+            setTimeout(initCanvas, 100); // 延遲一下確保 modal 展開後抓得到尺寸
+        }
+
+        function closeSignaturePad() {
+            const modal = document.getElementById('signature-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            document.body.style.overflow = '';
+        }
+
+        function initCanvas() {
+            canvas = document.getElementById('sig-canvas');
+            const container = document.getElementById('canvas-container');
+            ctx = canvas.getContext('2d');
+
+            // 設定畫布尺寸為實際顯示尺寸
+            canvas.width = container.clientWidth;
+            canvas.height = container.clientHeight;
+
+            // 筆觸設定
+            ctx.lineWidth = 3;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            ctx.strokeStyle = '#594A42'; // brand-text color
+
+            // 綁定事件
+            canvas.addEventListener('mousedown', startDrawing);
+            canvas.addEventListener('mousemove', draw);
+            canvas.addEventListener('mouseup', stopDrawing);
+            canvas.addEventListener('mouseout', stopDrawing);
+            
+            // 觸控事件
+            canvas.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                const touch = e.touches[0];
+                const rect = canvas.getBoundingClientRect();
+                startDrawing({ clientX: touch.clientX, clientY: touch.clientY });
+            }, { passive: false });
+
+            canvas.addEventListener('touchmove', (e) => {
+                e.preventDefault();
+                const touch = e.touches[0];
+                draw({ clientX: touch.clientX, clientY: touch.clientY });
+            }, { passive: false });
+
+            canvas.addEventListener('touchend', stopDrawing);
+        }
+
+        function startDrawing(e) {
+            isDrawing = true;
+            const rect = canvas.getBoundingClientRect();
+            ctx.beginPath();
+            ctx.moveTo(e.clientX - rect.left, e.clientY - rect.top);
+        }
+
+        function draw(e) {
+            if (!isDrawing) return;
+            const rect = canvas.getBoundingClientRect();
+            ctx.lineTo(e.clientX - rect.left, e.clientY - rect.top);
+            ctx.stroke();
+        }
+
+        function stopDrawing() {
+            isDrawing = false;
+        }
+
+        function clearCanvas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+        function saveSignature() {
+            // 簡單檢查是否有內容 (判斷像素) - 這裡簡化直接存
+            const dataUrl = canvas.toDataURL('image/png');
+            
+            // 更新 UI
+            document.getElementById('signature-trigger').classList.add('hidden');
+            document.getElementById('signature-result').classList.remove('hidden');
+            document.getElementById('sig-image').src = dataUrl;
+            document.getElementById('signatureData').value = dataUrl; // 存入隱藏欄位供表單送出
+            
+            // 設定時間
+            const now = new Date();
+            const timeStr = now.getFullYear() + '/' + 
+                           (now.getMonth()+1).toString().padStart(2, '0') + '/' + 
+                           now.getDate().toString().padStart(2, '0') + ' ' + 
+                           now.getHours().toString().padStart(2, '0') + ':' + 
+                           now.getMinutes().toString().padStart(2, '0') + ':' + 
+                           now.getSeconds().toString().padStart(2, '0');
+            document.getElementById('sig-timestamp').innerText = timeStr;
+
+            closeSignaturePad();
+            
+            // 重新初始化圖示 (因為 trash icon 是新顯示的)
+            lucide.createIcons();
+        }
+
+        function resetSignature() {
+            if(confirm('確定要清除簽名並重新簽署嗎？')) {
+                document.getElementById('signature-trigger').classList.remove('hidden');
+                document.getElementById('signature-result').classList.add('hidden');
+                document.getElementById('signatureData').value = '';
+            }
+        }
         // 啟動
         window.addEventListener('load', init);
 
     </script>
+    <div id="signature-modal" class="fixed inset-0 z-50 bg-white hidden flex-col">
+        <div class="bg-brand-bg px-4 py-3 flex justify-between items-center shadow-sm shrink-0">
+            <h3 class="font-bold text-brand-text">請在下方簽名</h3>
+            <button type="button" onclick="closeSignaturePad()" class="p-2 text-brand-light hover:text-brand-dark">
+                <i data-lucide="x" class="w-6 h-6"></i>
+            </button>
+        </div>
+
+        <div class="flex-1 relative bg-gray-50 touch-none overflow-hidden" id="canvas-container">
+            <canvas id="sig-canvas" class="absolute top-0 left-0 w-full h-full cursor-crosshair"></canvas>
+            <div class="absolute inset-0 flex items-center justify-center pointer-events-none opacity-20 text-4xl font-bold text-gray-300 select-none">
+                在此區域書寫
+            </div>
+        </div>
+
+        <div class="p-4 bg-white border-t border-brand-primary/10 flex gap-3 shrink-0 pb-8">
+            <button type="button" onclick="clearCanvas()" class="flex-1 py-3 rounded-xl border border-brand-primary text-brand-primary font-bold">清除重寫</button>
+            <button type="button" onclick="saveSignature()" class="flex-1 py-3 rounded-xl bg-brand-text text-white font-bold shadow-lg">確認簽名</button>
+        </div>
+    </div>
 </body>
 </html>
