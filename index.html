@@ -2,10 +2,13 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>麥克諾尼 | 日式寵物沙龍</title>
-    <meta name="description" content="日式寵物美容、洗護專門店">
-    
+<meta name="description" content="日式寵物美容、洗護專門店">
+    <link rel="icon" href="logo.jpg">
+    <link rel="apple-touch-icon" href="logo.jpg">
     <script src="https://cdn.tailwindcss.com"></script>
 
     <script>
@@ -34,11 +37,38 @@
     <script src="https://unpkg.com/lucide@latest"></script>
 
     <style>
+/* 全域設定 */
+        * {
+            /* 移除手機點擊時的預設高亮色塊 (最重要!) */
+            -webkit-tap-highlight-color: transparent;
+            /* 讓捲動更滑順 */
+            -webkit-overflow-scrolling: touch;
+        }
+
         body {
             background-color: #F9F4F0;
             color: #594A42;
-            font-family: Arial, Helvetica, sans-serif;
+            /* 使用系統原生字體，看起來更像 App */
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             overflow-x: hidden;
+            /* 禁止整個頁面被下拉回彈 (避免露出瀏覽器底色) */
+            overscroll-behavior-y: none;
+            /* 禁止長按選取文字 (更像 App 介面) */
+            -webkit-user-select: none;
+            user-select: none;
+            /* 適配 iPhone 安全區域 (避免被瀏海或 Home Bar 擋住) */
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+
+        /* 讓輸入框依然可以選取文字 */
+        input, textarea {
+            -webkit-user-select: text;
+            user-select: text;
+        }
+        
+        /* 避免 iOS 輸入框字體太小導致自動放大 (雖然我們已經禁用了 zoom，但這是雙重保險) */
+        input, select, textarea {
+            font-size: 16px !important; 
         }
 
         /* 玻璃擬態卡片 */
@@ -131,79 +161,68 @@
     background-size: 20px 20px;
 }
 
-/* Toast 提示樣式 */
-.toast-container {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    z-index: 9999;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
+/* Toast 提示樣式 - 麥克諾尼風格 */
+        .toast-container {
+            position: fixed;
+            top: calc(20px + env(safe-area-inset-top));
+            right: 0;
+            left: 0;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            align-items: center; /* 居中顯示 */
+            gap: 10px;
+            pointer-events: none;
+        }
 
-.toast {
-    min-width: 250px;
-    max-width: 400px;
-    padding: 16px 20px;
-    border-radius: 12px;
-    background: white;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    transform: translateX(400px);
-    animation: slideIn 0.3s ease forwards;
-}
+        .toast {
+            min-width: 280px;
+            max-width: 85%;
+            padding: 12px 20px;
+            border-radius: 50px; /* 膠囊狀 */
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(12px);
+            box-shadow: 0 8px 30px rgba(89, 74, 66, 0.15); /* brand-text shadow */
+            border: 1px solid rgba(199, 178, 153, 0.3); /* brand-primary border */
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transform: translateY(-50px);
+            opacity: 0;
+            animation: toastSlideDown 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+            pointer-events: auto;
+        }
 
-@keyframes slideIn {
-    to {
-        transform: translateX(0);
-    }
-}
+        @keyframes toastSlideDown {
+            to { transform: translateY(0); opacity: 1; }
+        }
 
-.toast.removing {
-    animation: slideOut 0.3s ease forwards;
-}
+        .toast.removing {
+            animation: toastFadeOut 0.3s ease forwards;
+        }
 
-@keyframes slideOut {
-    to {
-        transform: translateX(400px);
-        opacity: 0;
-    }
-}
+        @keyframes toastFadeOut {
+            to { transform: translateY(-20px); opacity: 0; }
+        }
 
-.toast.success {
-    border-left: 4px solid #10b981;
-}
+        /* 狀態顏色指示線 (左側小圓點) */
+        .toast::before {
+            content: '';
+            display: block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+        .toast.success::before { background-color: #10b981; box-shadow: 0 0 8px #10b981; }
+        .toast.error::before { background-color: #ef4444; box-shadow: 0 0 8px #ef4444; }
+        .toast.warning::before { background-color: #f59e0b; box-shadow: 0 0 8px #f59e0b; }
 
-.toast.error {
-    border-left: 4px solid #ef4444;
-}
+        .toast-icon { width: 20px; height: 20px; flex-shrink: 0; }
+        .toast-content { flex: 1; }
+        .toast-title { font-weight: 700; font-size: 0.9rem; color: #594A42; margin-bottom: 2px; }
+        .toast-message { font-size: 0.75rem; color: #8A7B70; font-weight: 500; }
 
-.toast.warning {
-    border-left: 4px solid #f59e0b;
-}
-
-.toast-icon {
-    width: 24px;
-    height: 24px;
-    flex-shrink: 0;
-}
-
-.toast-content {
-    flex: 1;
-}
-
-.toast-title {
-    font-weight: 600;
-    margin-bottom: 4px;
-}
-
-.toast-message {
-    font-size: 14px;
-    color: #666;
-}
 
     </style>
 </head>
@@ -356,15 +375,14 @@
                 </div>
             </div>
 
-            <form id="booking-form" class="space-y-6" onsubmit="app.handleFormSubmit(event)">
+<form id="booking-form" class="space-y-6" onsubmit="app.handleFormSubmit(event)" novalidate>
               
-                <section class="glass-card p-6 space-y-4">
-                    <h3 class="text-sm font-bold flex items-center gap-2 text-brand-dark border-b border-brand-primary/10 pb-2">
-                        <div class="w-1.5 h-1.5 bg-brand-primary rounded-full"></div> 一、飼主基本資料
-                    </h3>
-                    
-                    <div class="space-y-1">
-                        <label class="text-xs font-bold text-brand-light ml-1">手機號碼 *</label>
+<section class="glass-card p-6 space-y-4">
+    <h3 class="text-sm font-bold flex items-center gap-2 text-brand-dark border-b border-brand-primary/10 pb-2">
+        <div class="w-1.5 h-1.5 bg-brand-primary rounded-full"></div> 一、預約基本資料
+    </h3>
+    
+    <div class="space-y-1">                        <label class="text-xs font-bold text-brand-light ml-1">手機號碼 *</label>
                         <div class="flex gap-2">
                             <input type="tel" name="phone" id="phone" class="input-style" placeholder="09xxxxxxxx" required>
                             <button type="button" onclick="app.autoFillDemo()" class="whitespace-nowrap px-4 bg-brand-primary text-white text-xs font-bold rounded-xl shadow-sm active:scale-95 transition-transform">帶入紀錄</button>
@@ -491,21 +509,31 @@
                         <input type="text" id="medical-input" name="medicalDetail" class="input-style hidden" placeholder="請說明過往病史...">
                     </div>
 
-                    <div class="space-y-2">
+<div class="space-y-3">
                         <label class="text-xs font-bold text-brand-light ml-1">社交狀況 *</label>
-                        <div class="grid grid-cols-2 gap-2">
-                            <label class="option-card p-3 rounded-xl flex items-center justify-center text-center text-[11px] font-bold leading-tight" onclick="app.updateRadioStyle(this)">
-                                <input type="radio" name="socialStatus" value="有攻擊性" class="hidden" required> 有攻擊性
-                            </label>
-                            <label class="option-card p-3 rounded-xl flex items-center justify-center text-center text-[11px] font-bold leading-tight" onclick="app.updateRadioStyle(this)">
-                                <input type="radio" name="socialStatus" value="無攻擊性" class="hidden"> 無攻擊性
-                            </label>
-                            <label class="option-card p-3 rounded-xl flex items-center justify-center text-center text-[11px] font-bold leading-tight" onclick="app.updateRadioStyle(this)">
-                                <input type="radio" name="socialStatus" value="可與狗玩" class="hidden"> 可與狗朋友們<br>一起玩耍
-                            </label>
-                            <label class="option-card p-3 rounded-xl flex items-center justify-center text-center text-[11px] font-bold leading-tight" onclick="app.updateRadioStyle(this)">
-                                <input type="radio" name="socialStatus" value="不可與狗玩" class="hidden"> 不能與狗朋友們<br>一起玩耍
-                            </label>
+                        
+                        <div class="space-y-1">
+                            <span class="text-[10px] text-brand-primary/80 font-bold ml-1">1. 對人/環境反應</span>
+                            <div class="grid grid-cols-2 gap-2">
+                                <label class="option-card p-3 rounded-xl flex items-center justify-center text-center text-[11px] font-bold leading-tight" onclick="app.updateRadioStyle(this)">
+                                    <input type="radio" name="socialAggression" value="有攻擊性" class="hidden" required> 有攻擊性
+                                </label>
+                                <label class="option-card p-3 rounded-xl flex items-center justify-center text-center text-[11px] font-bold leading-tight" onclick="app.updateRadioStyle(this)">
+                                    <input type="radio" name="socialAggression" value="無攻擊性" class="hidden"> 無攻擊性
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="space-y-1">
+                            <span class="text-[10px] text-brand-primary/80 font-bold ml-1">2. 與其他狗狗互動</span>
+                            <div class="grid grid-cols-2 gap-2">
+                                <label class="option-card p-3 rounded-xl flex items-center justify-center text-center text-[11px] font-bold leading-tight" onclick="app.updateRadioStyle(this)">
+                                    <input type="radio" name="socialInteraction" value="可與狗玩" class="hidden" required> 可與狗朋友們<br>一起玩耍
+                                </label>
+                                <label class="option-card p-3 rounded-xl flex items-center justify-center text-center text-[11px] font-bold leading-tight" onclick="app.updateRadioStyle(this)">
+                                    <input type="radio" name="socialInteraction" value="不可與狗玩" class="hidden"> 不能與狗朋友們<br>一起玩耍
+                                </label>
+                            </div>
                         </div>
                     </div>
 
@@ -657,10 +685,13 @@
                             </div>
                         </div>
 
-                        <div class="bg-white/60 border border-brand-primary/30 rounded-xl p-5 space-y-4 shadow-sm mt-4">
-                            <div class="flex justify-between items-center text-xs text-brand-light">
-                                <span class="font-bold flex items-center gap-1"><i data-lucide="sparkles" class="w-3 h-3"></i> [升級項目] 小計</span>
-                                <span id="upgradeTotalDisplay" class="font-mono font-bold text-brand-text">$0</span>
+<div class="bg-white/60 border border-brand-primary/30 rounded-xl p-5 space-y-4 shadow-sm mt-4">
+                            
+<div id="upgrade-row" class="hidden flex justify-between items-center text-xs animate-fade-in pb-2 mb-2 border-b border-brand-primary/10">
+                                <span class="font-bold flex items-center gap-1 text-brand-dark">
+                                    <i data-lucide="sparkles" class="w-3 h-3 text-brand-primary"></i> [升級項目] 小計
+                                </span>
+                                <span id="upgradeTotalDisplay" class="font-mono font-bold text-brand-text text-sm">$0</span>
                             </div>
 
                             <div class="space-y-1">
@@ -682,7 +713,6 @@
                                 <span id="totalPriceDisplay" class="text-2xl font-black text-brand-text">$0</span>
                             </div>
                         </div>                    
-                        
                         <div class="space-y-4 pt-4 border-t border-brand-primary/10">
                             <h4 class="text-xs font-bold text-brand-text flex items-center gap-1">
                                 <i data-lucide="alert-circle" class="w-3 h-3 text-brand-primary"></i> 特殊服務
@@ -788,7 +818,8 @@
                             </div>
                         </div>
 
-                        <div class="space-y-4 pt-4 border-t border-brand-primary/10">
+                        <div class="space-y-4 pt-4 border-t border-brand-primary/10">                        
+<div class="space-y-4 pt-4 border-t border-brand-primary/10">
                             <h4 class="text-xs font-bold text-brand-text flex items-center gap-1">
                                 <i data-lucide="wallet" class="w-3 h-3 text-brand-primary"></i> 支付方式 *
                             </h4>
@@ -810,70 +841,90 @@
                     </div>
                 </section>
 
-                <section class="glass-card p-6 space-y-4">
-                    <h3 class="text-sm font-bold text-brand-dark mb-2">契約條款與簽署</h3>
+<section class="glass-card p-6 space-y-4 bg-white/80">
+                    <h3 class="text-sm font-bold flex items-center gap-2 text-brand-dark border-b border-brand-primary/10 pb-2">
+                        <div class="w-1.5 h-1.5 bg-brand-secondary rounded-full"></div> 契約條款與簽署
+                    </h3>
                     
-                    <div id="risk-warning" class="hidden animate-fade-in border-2 border-red-200 bg-red-50 p-4 rounded-xl space-y-2">
-                        <div class="flex items-center gap-2 text-red-600 font-bold text-xs">
-                          <span class="bg-red-600 text-white px-2 py-0.5 rounded text-[10px]">重要</span>
-                          高風險寵物美容服務風險告知
+                    <div onclick="app.toggleTermsModal(true,'general')" class="w-full bg-white border border-brand-primary/30 rounded-2xl p-4 flex items-center justify-between cursor-pointer shadow-sm active:scale-98 transition-transform group">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-full bg-brand-primary/10 flex items-center justify-center text-brand-primary group-hover:bg-brand-primary group-hover:text-white transition-colors">
+                                <i data-lucide="file-text" class="w-5 h-5"></i>
+                            </div>
+                            <div>
+                                <h4 class="text-sm font-bold text-brand-text">美容服務契約條款 *</h4>
+                                <p class="text-[10px] text-brand-light">點擊開啟全螢幕詳細閱讀</p>
+                            </div>
                         </div>
-                        <p class="text-[11px] text-red-800 leading-relaxed text-justify">
-                          系統檢測您的寵物為 <strong>高齡(8歲+)</strong> 或 <strong>幼體(1歲-)</strong>。
-                          <br/>請確認您已知悉相關風險，並同意店家在緊急時刻進行醫療處置。
-                        </p>
-                        <label class="flex items-center gap-2 mt-2 cursor-pointer">
-                          <input type="checkbox" id="risk-checkbox" class="accent-red-500 w-4 h-4" />
-                          <span class="text-xs font-bold text-red-700">我已了解並同意承擔高風險服務責任</span>
-                        </label>
+                        <i data-lucide="chevron-right" class="w-5 h-5 text-brand-light/50"></i>
                     </div>
 
-                    <label class="flex items-start gap-3 p-2 cursor-pointer mt-2 bg-white/50 rounded-xl">
-                        <input type="checkbox" id="agreement" class="mt-1 w-4 h-4 accent-brand-primary" required>
-                        <span class="text-xs font-bold text-brand-text pt-0.5">本人已詳閱並同意以上契約內容</span>
-                    </label>
-
-                    <div class="space-y-2 pt-4 border-t border-brand-primary/10">
-                        <label class="text-xs font-bold text-brand-dark flex items-center gap-1">
-                            <i data-lucide="pen-tool" class="w-3 h-3"></i> 數位簽名 *
-                        </label>
-
-                        <div id="signature-trigger" onclick="app.signaturePad.open()" class="w-full h-32 rounded-xl border-2 border-dashed border-brand-primary/30 bg-white/40 flex flex-col items-center justify-center gap-2 cursor-pointer hover:bg-white/60 hover:border-brand-primary transition-all group">
-                            <div class="w-10 h-10 rounded-full bg-brand-primary/10 flex items-center justify-center text-brand-primary group-hover:scale-110 transition-transform">
-                                <i data-lucide="pen-tool" class="w-5 h-5"></i>
+                    <div id="risk-warning-banner" class="hidden w-full bg-[#fef2f2] border border-[#fee2e2] rounded-2xl p-4 flex items-center justify-between cursor-pointer shadow-sm animate-fade-in active:scale-98 transition-transform group mt-3" onclick="app.toggleTermsModal(true, 'risk')">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-full bg-[#fee2e2] flex items-center justify-center text-[#dc2626] group-hover:bg-[#dc2626] group-hover:text-white transition-colors">
+                                <i data-lucide="alert-triangle" class="w-5 h-5"></i>
                             </div>
-                            <span class="text-xs font-bold text-brand-light group-hover:text-brand-text">點擊此處開始簽名</span>
-                            <span class="text-[10px] text-brand-primary/60">系統將開啟全螢幕簽名板</span>
+                            <div>
+                                <h4 class="text-sm font-black text-[#991b1b]">高風險寵物美容風險告知</h4>
+                                <p class="text-[10px] text-[#f87171] font-bold">檢測到毛孩屬於高風險族群，請務必詳閱</p>
+                            </div>
                         </div>
+                        <span class="bg-[#fee2e2] text-[#991b1b] text-[10px] font-black px-3 py-1.5 rounded-full whitespace-nowrap">務必詳閱</span>
+                    </div>
+
+<div class="space-y-3 pt-2">
                         
-                        <div id="signature-result" class="hidden relative group animate-fade-in">
-                            <div class="w-full bg-white border border-brand-primary/20 rounded-xl p-4 relative overflow-hidden shadow-sm">
-                                <button type="button" onclick="app.signaturePad.reset()" class="absolute top-2 right-2 p-2 bg-gray-50 text-gray-400 hover:bg-red-50 hover:text-red-500 rounded-lg transition-colors z-20">
-                                    <i data-lucide="trash-2" class="w-4 h-4"></i>
-                                </button>
-                                
-                                <div class="flex justify-center my-1 relative z-10 h-20">
-                                    <img id="sig-image" src="" alt="您的簽名" class="h-full object-contain">
-                                </div>
-                                
-                                <div class="h-px bg-brand-primary/10 w-full my-2"></div>
-                                
-                                <div class="flex items-center justify-between gap-2">
-                                    <div class="bg-[#06C755]/10 text-[#06C755] px-2 py-1 rounded-md text-[10px] font-black flex items-center gap-1 border border-[#06C755]/20">
-                                        <i data-lucide="check-circle" class="w-3 h-3"></i> 已簽署
-                                    </div>
-                                    <div class="flex items-center gap-1 text-[10px] text-gray-400 font-mono bg-gray-50 px-2 py-1 rounded">
-                                        <i data-lucide="clock" class="w-3 h-3"></i>
-                                        <span id="sig-timestamp">--:--:--</span>
-                                    </div>
-                                </div>
+                        <div id="risk-checkbox-container" class="hidden animate-fade-in">
+                            <label class="flex items-start gap-3 p-3 cursor-pointer rounded-xl bg-[#fef2f2] border border-[#fee2e2] hover:bg-red-50 transition-colors shadow-sm">
+                                <input type="checkbox" id="risk-checkbox" class="w-5 h-5 accent-red-500 shrink-0 mt-0.5">
+                                <span class="text-xs font-bold text-[#991b1b] leading-relaxed">
+                                    本人已詳閱契約內容，並同意承擔高風險服務之相關責任。
+                                </span>
+                            </label>
+                        </div>
+
+                        <div id="normal-checkbox-container" class="animate-fade-in">
+                            <label class="flex items-center gap-2 p-2 cursor-pointer rounded-lg hover:bg-black/5 transition-colors">
+                                <input type="checkbox" id="agreement" class="w-4 h-4 accent-brand-primary shrink-0" required>
+                                <span class="text-xs font-bold text-brand-text">本人已詳閱並同意以上契約內容</span>
+                            </label>
+                        </div>
+
+                        <div class="space-y-1 pt-2">
+                            <label class="text-xs font-bold text-brand-dark flex items-center gap-1 ml-1">
+                                <i data-lucide="pen-tool" class="w-3 h-3"></i> 數位簽名 *
+                            </label>
+
+                            <div id="signature-trigger" onclick="app.signaturePad.open()" class="w-full h-24 rounded-xl border-2 border-dashed border-brand-primary/30 bg-brand-bg/30 flex flex-col items-center justify-center gap-1 cursor-pointer hover:bg-brand-primary/5 hover:border-brand-primary transition-all group">
+                                <span class="text-xs font-bold text-brand-light group-hover:text-brand-text flex items-center gap-1">
+                                    <i data-lucide="edit-3" class="w-3 h-3"></i> 點擊簽名
+                                </span>
+                                <span class="text-[10px] text-brand-primary/60">系統將開啟全螢幕簽名板</span>
                             </div>
-                            <input type="hidden" name="signatureData" id="signatureData" required>
+                            
+                            <div id="signature-result" class="hidden relative group animate-fade-in">
+                                <div class="w-full bg-white border border-brand-primary/20 rounded-xl p-2 relative overflow-hidden shadow-sm">
+                                    <button type="button" onclick="app.signaturePad.reset()" class="absolute top-2 right-2 p-1.5 bg-gray-50 text-gray-400 hover:bg-red-50 hover:text-red-500 rounded-lg transition-colors z-20">
+                                        <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                                    </button>
+                                    
+                                    <div class="flex justify-center h-16 relative z-10">
+                                        <img id="sig-image" src="" alt="您的簽名" class="h-full object-contain">
+                                    </div>
+                                    <div class="flex items-center justify-between gap-2 mt-2 pt-2 border-t border-dashed border-gray-100">
+                                        <div class="bg-[#06C755]/10 text-[#06C755] px-1.5 py-0.5 rounded text-[10px] font-black flex items-center gap-1">
+                                            <i data-lucide="check-circle" class="w-3 h-3"></i> 已簽署
+                                        </div>
+                                        <span id="sig-timestamp" class="text-[10px] text-gray-400 font-mono">--:--</span>
+                                    </div>
+                                </div>
+                                <input type="hidden" name="signatureData" id="signatureData" required>
+                            </div>
                         </div>
                     </div>
 
-                    <button type="submit" class="w-full bg-brand-text text-white py-4 rounded-xl font-bold flex items-center justify-center gap-2 shadow-lg active:scale-95 transition-all hover:bg-brand-dark mt-4">
-                        <i data-lucide="check-circle" class="w-4 h-4"></i> 確認送出預約
+                    <button type="submit" class="w-full bg-brand-text text-white py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 shadow-lg active:scale-95 transition-all hover:bg-brand-dark mt-2">
+                        <i data-lucide="send" class="w-4 h-4"></i> 確認送出預約
                     </button>
                 </section>
             </form>
@@ -902,56 +953,58 @@
     </div>
 
     <script>
-// Toast 工具函數
-const toast = {
-    container: null,
-    
-    init() {
-        this.container = document.getElementById('toast-container');
-    },
-    
-    show(message, type = 'success', title = '') {
-        if (!this.container) this.init();
-        
-        const toastEl = document.createElement('div');
-        toastEl.className = `toast ${type}`;
-        
-        // 根據類型選擇圖標
-        let iconHtml = '';
-        switch(type) {
-            case 'success':
-                iconHtml = '<i data-lucide="check-circle" class="toast-icon text-green-500"></i>';
-                break;
-            case 'error':
-                iconHtml = '<i data-lucide="x-circle" class="toast-icon text-red-500"></i>';
-                break;
-            case 'warning':
-                iconHtml = '<i data-lucide="alert-triangle" class="toast-icon text-yellow-500"></i>';
-                break;
-        }
-        
-        toastEl.innerHTML = `
-            ${iconHtml}
-            <div class="toast-content">
-                ${title ? `<div class="toast-title">${title}</div>` : ''}
-                <div class="toast-message">${message}</div>
-            </div>
-        `;
-        
-        this.container.appendChild(toastEl);
-        
-        // 初始化圖標
-        lucide.createIcons();
-        
-        // 自動移除
-        setTimeout(() => {
-            toastEl.classList.add('removing');
-            setTimeout(() => {
-                toastEl.remove();
-            }, 300);
-        }, 3000);
-    }
-};
+// Toast 工具函數 (新版)
+        const toast = {
+            container: null,
+            init() { this.container = document.getElementById('toast-container'); },
+            show(message, type = 'success', title = '') {
+                if (!this.container) this.init();
+                const toastEl = document.createElement('div');
+                toastEl.className = `toast ${type}`;
+                
+                // 設定顏色變數與標題
+                let iconColor = 'text-brand-primary';
+                let defaultTitle = '通知';
+                let iconName = 'info';
+
+                switch(type) {
+                    case 'success':
+                        iconColor = 'text-green-500';
+                        defaultTitle = '成功';
+                        iconName = 'check-circle-2';
+                        break;
+                    case 'error':
+                        iconColor = 'text-red-500';
+                        defaultTitle = '錯誤';
+                        iconName = 'alert-circle';
+                        break;
+                    case 'warning':
+                        iconColor = 'text-amber-500';
+                        defaultTitle = '注意';
+                        iconName = 'alert-triangle';
+                        break;
+                }
+
+                const finalTitle = title || defaultTitle;
+                
+                toastEl.innerHTML = `
+                    <i data-lucide="${iconName}" class="toast-icon ${iconColor}"></i>
+                    <div class="toast-content">
+                        <div class="toast-title">${finalTitle}</div>
+                        <div class="toast-message">${message}</div>
+                    </div>
+                `;
+                
+                this.container.appendChild(toastEl);
+                lucide.createIcons();
+                
+                // 3秒後移除
+                setTimeout(() => {
+                    toastEl.classList.add('removing');
+                    setTimeout(() => toastEl.remove(), 300);
+                }, 3000);
+            }
+        };
 
         // 應用程式主物件
         const app = {
@@ -1132,14 +1185,90 @@ init() {
                 }
             },
 
-            // 高風險檢查
+// 高風險檢查
             checkRisk(age) {
-                const warning = document.getElementById('risk-warning');
-                const ageNum = parseInt(age);
-                if (ageNum >= 8 || ageNum <= 1) {
-                    warning.classList.remove('hidden');
+                // 取得元件
+                const warningBanner = document.getElementById('risk-warning-banner');
+                const modalRiskContent = document.getElementById('modal-risk-content');
+                
+                // 取得勾選框容器
+                const riskContainer = document.getElementById('risk-checkbox-container');
+                const normalContainer = document.getElementById('normal-checkbox-container');
+                
+                // 取得實際的 input (為了控制 required)
+                const riskInput = document.getElementById('risk-checkbox');
+                const normalInput = document.getElementById('agreement');
+                
+                const ageNum = parseFloat(age);
+                
+                if (!isNaN(ageNum) && (ageNum >= 8 || ageNum <= 1)) {
+                    // === 高風險模式 ===
+                    
+                    // 1. 顯示紅色警示卡片
+                    warningBanner.classList.remove('hidden');
+                    modalRiskContent.classList.remove('hidden');
+                    
+                    // 2. 切換勾選框：顯示紅色，隱藏一般
+                    riskContainer.classList.remove('hidden');
+                    normalContainer.classList.add('hidden');
+                    
+                    // 3. 設定必填邏輯 (紅色必填，一般免填)
+                    riskInput.required = true;
+                    normalInput.required = false;
+                    normalInput.checked = false; // 清除一般勾選
+                    
+                    toast.show('檢測為高風險族群，請務必詳閱紅色告知條款', 'warning');
                 } else {
-                    warning.classList.add('hidden');
+                    // === 一般模式 ===
+                    
+                    // 1. 隱藏紅色警示
+                    warningBanner.classList.add('hidden');
+                    modalRiskContent.classList.add('hidden');
+                    
+                    // 2. 切換勾選框：顯示一般，隱藏紅色
+                    riskContainer.classList.add('hidden');
+                    normalContainer.classList.remove('hidden');
+                    
+                    // 3. 設定必填邏輯 (一般必填，紅色免填)
+                    riskInput.required = false;
+                    riskInput.checked = false; // 清除高風險勾選
+                    normalInput.required = true;
+                }
+            },
+
+// 開關條款 Modal (新增 type 參數)
+            toggleTermsModal(show, type = 'general') {
+                const modal = document.getElementById('terms-modal');
+                const title = document.getElementById('modal-title');
+                const generalContent = document.getElementById('modal-general-content');
+                const riskContent = document.getElementById('modal-risk-content');
+
+                if (show) {
+                    modal.classList.remove('hidden');
+                    modal.classList.add('flex');
+                    document.body.style.overflow = 'hidden'; // 禁止背景捲動
+                    
+                    // 根據 type 決定顯示內容
+                    if (type === 'general') {
+                        // 顯示一般，隱藏高風險
+                        title.innerText = '美容服務契約條款';
+                        generalContent.classList.remove('hidden');
+                        riskContent.classList.add('hidden');
+                    } else if (type === 'risk') {
+                        // 顯示高風險，隱藏一般
+                        title.innerText = '高風險風險告知';
+                        generalContent.classList.add('hidden');
+                        riskContent.classList.remove('hidden');
+                    }
+                    
+                    // 重置捲軸位置到最上方
+                    modal.querySelector('.overflow-y-auto').scrollTop = 0;
+                    
+                    lucide.createIcons();
+                } else {
+                    modal.classList.add('hidden');
+                    modal.classList.remove('flex');
+                    document.body.style.overflow = '';
                 }
             },
 
@@ -1241,30 +1370,35 @@ autoFillDemo() {
                 }, 0);
             },
 
-            // 計算總金額功能
+// 計算總金額功能
             calculateTotal() {
-                // 1. 取得基礎報價 (如果沒填則為 0)
+                // 1. 取得基礎報價
                 let base = parseInt(document.getElementById('basePrice').value) || 0;
 
                 // 2. 計算升級項目
                 let upgradeMin = 0;
                 let upgradeMax = 0;
-                let hasVariable = false; // 是否有包含浮動價格的項目
+                let hasVariable = false;
+                
+                // 檢查是否有選中任何升級項目
+                const checkedUpgrades = document.querySelectorAll('input[name="spaUpgrades"]:checked');
+                const upgradeRow = document.getElementById('upgrade-row');
 
-                document.querySelectorAll('input[name="spaUpgrades"]:checked').forEach(cb => {
-                    // 處理價格字串：移除 '+' 和 '元' (例如: "+199" -> "199", "+399~599" -> "399~599")
+                // 控制小計行的顯示/隱藏
+                if (checkedUpgrades.length > 0) {
+                    upgradeRow.classList.remove('hidden');
+                } else {
+                    upgradeRow.classList.add('hidden');
+                }
+
+                checkedUpgrades.forEach(cb => {
                     let priceStr = cb.dataset.price.replace('+', '').replace(/元/g, '').trim();
-                    
                     if (priceStr.includes('~')) {
-                        // 處理範圍價格 (例如 399~599)
                         let parts = priceStr.split('~');
-                        let min = parseInt(parts[0]);
-                        let max = parseInt(parts[1]);
-                        upgradeMin += min;
-                        upgradeMax += max;
+                        upgradeMin += parseInt(parts[0]);
+                        upgradeMax += parseInt(parts[1]);
                         hasVariable = true;
                     } else {
-                        // 處理固定價格
                         let val = parseInt(priceStr);
                         upgradeMin += val;
                         upgradeMax += val;
@@ -1272,8 +1406,6 @@ autoFillDemo() {
                 });
 
                 // 3. 更新介面顯示
-                
-                // 升級小計顯示
                 let upgradeText = hasVariable ? `+$${upgradeMin} ~ $${upgradeMax}` : `+$${upgradeMin}`;
                 document.getElementById('upgradeTotalDisplay').innerText = upgradeText;
 
@@ -1281,7 +1413,6 @@ autoFillDemo() {
                 let totalMin = base + upgradeMin;
                 let totalMax = base + upgradeMax;
                 
-                // 如果基礎價格是 0 且沒有選購升級，顯示 $0
                 if (totalMin === 0 && totalMax === 0) {
                     document.getElementById('totalPriceDisplay').innerText = "$0";
                     return;
@@ -1292,42 +1423,131 @@ autoFillDemo() {
             },
 
 // 表單提交
-handleFormSubmit(e) {
-    e.preventDefault();
-    // 這裡加入各種檢查
-    if (!this.state.lineConfirmed) {
-        toast.show('請先確認已加入 LINE 官方帳號並傳送貼圖！', 'error', '未完成步驟');
-        document.getElementById('view-grooming').scrollIntoView();
-        return;
-    }
-    
-    // 檢查打結方案 (只有在勾選「疑似有打結」時才檢查)
-    const mattingCheckbox = document.querySelector('input[name="mattingSuspected"]');
-    if (mattingCheckbox && mattingCheckbox.checked) {
-        const mattingChoice = document.querySelector('input[name="mattingChoice"]:checked');
-        if (!mattingChoice) {
-            toast.show('您勾選了「疑似有打結」，請在下方卷軸中選擇一種處理方案（方案一或方案二）。', 'error', '請選擇處理方案');
-            return;
-        }
-    }
+            handleFormSubmit(e) {
+                e.preventDefault();
+                const form = e.target;
 
-    // 高風險檢查
-    const riskCheckbox = document.getElementById('risk-checkbox');
-    if (!document.getElementById('risk-warning').classList.contains('hidden') && !riskCheckbox.checked) {
-        toast.show('請勾選同意高風險服務責任', 'error', '未同意條款');
-        return;
-    }
+                // 1. 手動檢查必填欄位
+                if (!form.checkValidity()) {
+                    const invalidInput = form.querySelector(':invalid');
+                    if (invalidInput) {
+                        let fieldName = "必填欄位";
 
-    // 檢查簽名
-    if(document.getElementById('signatureData').value === '') {
-        toast.show('請進行數位簽名！', 'error', '缺少簽名');
-        return;
-    }
+// 方法一：精準對照表 (優先使用，保證顯示正確中文)
+                        const nameMap = {
+                            'phone': '手機號碼',
+                            'ownerName': '飼主姓名',
+                            'ownerId': '身分證字號',
+                            'email': '電子信箱',
+                            'address': '通訊地址',
+                            'emergencyName': '緊急聯絡人',
+                            'emergencyPhone': '緊急電話',
+                            'petSpecies': '寵物種類',
+                            'petName': '寵物名字',
+                            'breed': '寵物品種',
+                            'weight': '體重',
+                            'ageYear': '年齡',
+                            'gender': '性別',
+                            'ligation': '結紮狀況',
+                            'medicalHistory': '過往病史',
+                            'socialAggression': '社交狀況-對人反應', // 新增
+                            'socialInteraction': '社交狀況-對狗反應', // 新增
+                            'temperament': '攻擊性評估',
+                            'chipStatus': '晶片狀況',
+                            'paymentMethod': '支付方式',
+                            'agreement': '契約條款勾選'
+                        };
 
-    toast.show('預約送出成功！(這是靜態頁面 Demo)', 'success', '預約成功');
-    this.switchView('home');
-},
+                        if (nameMap[invalidInput.name]) {
+                            fieldName = nameMap[invalidInput.name];
+                        } else {
+                            // 方法二：如果不在表內，才嘗試抓取標題 (備用方案)
+                            // 往上找題目區塊 (.space-y-1 或 .space-y-2)
+                            const container = invalidInput.closest('.space-y-1') || invalidInput.closest('.space-y-2');
+                            if (container) {
+                                // 抓取區塊內的第一個 label (通常是題目)，並排除選項按鈕(.option-card)
+                                const label = container.querySelector('label:not(.option-card)');
+                                if (label) fieldName = label.innerText.replace('*', '').trim();
+                            } else if (invalidInput.placeholder) {
+                                fieldName = invalidInput.placeholder;
+                            }
+                        }
+                        
+                        toast.show(`請檢查「${fieldName}」是否已填寫正確`, 'error', '資料不完整');
+                        
+                        // 捲動到該欄位
+                        invalidInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        
+                        // 針對 Radio 按鈕的特殊處理 (讓焦點回到選項上)
+                        if (invalidInput.type === 'radio') {
+                            // 嘗試讓整個選項區塊閃爍
+                            const group = invalidInput.closest('.grid') || invalidInput.closest('.flex');
+                            if(group) {
+                                group.classList.add('animate-pulse');
+                                setTimeout(() => group.classList.remove('animate-pulse'), 500);
+                            }
+                        } else {
+                            invalidInput.focus();
+                        }
+                    }
+                    return;
+                }
 
+                // 2. 檢查 LINE
+                if (!this.state.lineConfirmed) {
+                    toast.show('請先加入 LINE 並傳送貼圖，我們才能聯繫您喔！', 'warning', '步驟未完成');
+                    document.getElementById('view-grooming').scrollIntoView({ behavior: 'smooth' });
+                    return;
+                }
+                
+                // 3. 檢查打結方案
+                const mattingCheckbox = document.querySelector('input[name="mattingSuspected"]');
+                if (mattingCheckbox && mattingCheckbox.checked) {
+                    const mattingChoice = document.querySelector('input[name="mattingChoice"]:checked');
+                    if (!mattingChoice) {
+                        toast.show('您勾選了「疑似有打結」，請往下滑選擇一種處理方案。', 'warning');
+                        document.getElementById('matting-details').scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        return;
+                    }
+                }
+
+// 4. 高風險檢查
+                const riskBanner = document.getElementById('risk-warning-banner');
+                
+                // 如果是高風險模式 (紅色 Banner 顯示中)
+                if (!riskBanner.classList.contains('hidden')) {
+                    const riskInput = document.getElementById('risk-checkbox');
+                    if (!riskInput.checked) {
+                        toast.show('請勾選「同意承擔高風險服務責任」才能繼續', 'error');
+                        
+                        // 視覺提示
+                        const container = document.getElementById('risk-checkbox-container');
+                        container.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        container.classList.add('animate-pulse');
+                        setTimeout(() => container.classList.remove('animate-pulse'), 500);
+                        return;
+                    }
+                }
+
+                // 5. 檢查簽名
+                if(document.getElementById('signatureData').value === '') {
+                    toast.show('請點擊簽名板進行簽署', 'error');
+                    document.getElementById('signature-trigger').scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    return;
+                }
+
+                // 全部通過
+                toast.show('預約資料已成功送出！期待見到毛孩！', 'success');
+                setTimeout(() => {
+                    form.reset();
+                    this.switchView('home');
+                    this.state.lineConfirmed = false;
+                    document.getElementById('sig-image').src = '';
+                    document.getElementById('signature-result').classList.add('hidden');
+                    document.getElementById('signature-trigger').classList.remove('hidden');
+                    this.toggleLineCheck();
+                }, 1500);
+            },
 
             // 簽名板功能
             signaturePad: {
@@ -1476,13 +1696,21 @@ handleFormSubmit(e) {
                     lucide.createIcons();
                 },
                 
+// 清除畫布 (在 Modal 裡面的清除)
+                clear() {
+                    if (this.ctx && this.canvas) {
+                        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                    }
+                },
+                
+                // 重置整個簽名流程 (已經簽完要重簽)
                 reset() {
-                    if(confirm('確定要清除簽名並重新簽署嗎？')) {
-    toast.show('已清除簽名，請重新簽署', 'warning', '清除簽名');
-    document.getElementById('signature-trigger').classList.remove('hidden');
-    document.getElementById('signature-result').classList.add('hidden');
-    document.getElementById('signatureData').value = '';
-
+                    if(confirm('確定要清除目前的簽名並重新簽署嗎？')) {
+                        toast.show('已清除，請重新簽名', 'warning');
+                        document.getElementById('signature-trigger').classList.remove('hidden');
+                        document.getElementById('signature-result').classList.add('hidden');
+                        document.getElementById('signatureData').value = '';
+                        document.getElementById('sig-image').src = '';
                     }
                 }
             }
@@ -1491,5 +1719,58 @@ handleFormSubmit(e) {
         // 啟動應用程式
         window.addEventListener('load', () => app.init());
     </script>
+<div id="terms-modal" class="fixed inset-0 z-[60] bg-white hidden flex-col animate-fade-in">
+        <div class="bg-white/90 backdrop-blur-md px-5 py-4 flex justify-between items-center shadow-sm shrink-0 border-b border-brand-primary/10 relative z-10">
+            <h3 id="modal-title" class="font-bold text-lg text-brand-text">服務契約條款</h3>
+            <button type="button" onclick="app.toggleTermsModal(false)" class="p-2 bg-gray-100 rounded-full text-brand-light hover:bg-gray-200 transition-colors">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+        </div>
+
+        <div class="flex-1 overflow-y-auto p-6 bg-[#F9F4F0] space-y-6">
+            
+            <div id="modal-general-content" class="bg-white p-5 rounded-2xl shadow-sm border border-brand-primary/10 space-y-4">
+                <h4 class="text-sm font-black text-brand-primary border-b border-brand-primary/10 pb-2">一般美容服務條款</h4>
+                <div class="text-xs text-brand-text leading-relaxed space-y-4 text-justify">
+                    <p class="font-bold text-brand-dark">為保障寵物安全及服務品質，飼主預約前請詳閱。預約即視為同意：</p>
+                    
+                    <div><span class="font-bold text-brand-dark">第一條(契約目的與服務範圍)</span><br>本契約所稱犬、貓美容服務，係指清洗、清潔、吹乾、梳毛、毛髮修剪及造型設計等行為，不涉及任何動物醫療行為。</div>
+                    <div><span class="font-bold text-brand-dark">第二條(資訊揭露與契約效力)</span><br>本契約及其附件、公告事項，均視為本契約之一部分，經雙方簽署後生效。</div>
+                    <div><span class="font-bold text-brand-dark">第三條（基本資料）</span><br>應記載犬、貓、飼主及美容店之基本資料，詳如填載內容。</div>
+                    <div><span class="font-bold text-brand-dark">第四條（詢問義務與誠實告知）</span><br>飼主應誠實告知寵物個性、攻擊性、病史。若未如實告知致發生異常，非店家之責。</div>
+                    <div><span class="font-bold text-brand-dark">第五條（攻擊行為與安全中止）</span><br>若出現抓咬、持續抗拒等危及安全行為，店家得立即中止服務。</div>
+                    <div><span class="font-bold text-brand-dark">第六條（抗拒、躁動致無法完成服務）</span><br>因寵物緊張躁動致難以繼續，店家得中止或縮短流程，屬不可歸責雙方之事由。</div>
+                    <div><span class="font-bold text-brand-dark">第八條（應激反應與突發異常）</span><br>美容期間如發生應激反應(喘氣/失禁等)，店家將即時處理或送醫。非人為疏失不負賠償責任。</div>
+                    <div><span class="font-bold text-brand-dark">第九條（毛髮打結與處理方式調整）</span><br>現場發現嚴重打結，店家得依實際狀況調整處理方式（包含剃毛）及計收拆結費。</div>
+                    <div><span class="font-bold text-brand-dark">第十條（服務中止與費用計算）</span><br>即使服務未完成，已實施之洗、吹、剪等項目，飼主仍需支付費用。</div>
+                    <div><span class="font-bold text-brand-dark">第十一條（異常狀況及責任歸屬）</span><br>發生異常或死亡，若屬店家過失依法負責；非店家過失則不負賠償責任。</div>
+                    <div><span class="font-bold text-brand-dark">二、服務項目與收費</span><br>收費以現場評估體重/毛量為準。發現寄生蟲需加收環境清潔費$1000。美容後逾時1小時未接回，將收取安親費(犬$200/貓$300每小時)。</div>
+                    <div><span class="font-bold text-brand-dark">三、健康與接待規定</span><br>不接待：未滿3個月、疫苗未全、有傳染病、心臟病、癲癇之寵物。故意隱瞞致人員受傷需負擔醫療費。</div>
+                    <div><span class="font-bold text-brand-dark">四、其他條款</span><br>1. 輕微剃傷(小於1cm)為美容常見風險，店家負責消毒。操作疏失最高賠償$2000。<br>2. 緊急狀況無法聯繫飼主時，將立即送醫，費用由飼主負擔。<br>3. 飼主同意店家拍攝並使用照片於行銷用途。</div>
+                </div>
+            </div>
+
+            <div id="modal-risk-content" class="bg-red-50 p-5 rounded-2xl shadow-sm border border-red-200 space-y-4">
+                <div class="flex items-center gap-2 border-b border-red-200 pb-2">
+                     <i data-lucide="alert-triangle" class="w-5 h-5 text-red-500"></i>
+                     <h4 class="text-sm font-black text-red-600">高風險寵物美容服務風險告知</h4>
+                </div>
+                <div class="text-xs text-red-900 leading-relaxed space-y-4 text-justify">
+                    <div><span class="font-bold">一、飼主誠實告知義務</span><br>本人確認已完整告知寵物年齡、病史及行為特性。如因未告知致生意外，店家不負責任。</div>
+                    <div><span class="font-bold">二、高齡與特殊健康狀況之風險</span><br>本人知悉高齡(8歲+)或幼體(1歲-)寵物，美容過程可能因緊張誘發休克、舊疾復發。若非店家故意或重大過失，店家不負賠償責任。</div>
+                    <div><span class="font-bold">三、攻擊性與安全防護</span><br>若寵物有攻擊性，同意店家採取戴嘴套等防護措施。若危及安全，店家得隨時中止服務並收費。</div>
+                    <div><span class="font-bold">四、緊急醫療處置</span><br>發生緊急狀況時，同意店家優先將寵物送醫，費用由本人負擔。</div>
+                </div>
+            </div>
+
+            <div class="h-12"></div> </div>
+
+        <div class="p-4 bg-white border-t border-brand-primary/10 shrink-0">
+            <button type="button" onclick="app.toggleTermsModal(false)" class="w-full py-3.5 rounded-xl bg-brand-text text-white font-bold shadow-lg active:scale-95 transition-transform flex items-center justify-center gap-2">
+                <i data-lucide="check" class="w-4 h-4"></i> 我已閱讀完畢
+            </button>
+        </div>
+    </div>
 </body>
 </html>
+
