@@ -713,7 +713,112 @@
                                 <span id="totalPriceDisplay" class="text-2xl font-black text-brand-text">$0</span>
                             </div>
                         </div>                    
-                        
+                        <div class="space-y-4 pt-4 border-t border-brand-primary/10">
+                            <h4 class="text-xs font-bold text-brand-text flex items-center gap-1">
+                                <i data-lucide="alert-circle" class="w-3 h-3 text-brand-primary"></i> 特殊服務
+                            </h4>
+
+                            <label class="option-card p-4 rounded-xl flex items-center gap-3 cursor-pointer group transition-all" onclick="app.toggleMatting(this)">
+                                <input type="checkbox" name="mattingSuspected" class="accent-brand-primary w-4 h-4">
+                                <div class="flex-1">
+                                    <span class="text-sm font-bold text-brand-text flex items-center gap-2">
+                                        疑似有打結 
+                                        <span class="text-[10px] font-normal text-brand-light bg-brand-primary/10 px-2 rounded-full">需現場評估</span>
+                                    </span>
+                                    <span class="text-[11px] text-brand-primary font-bold mt-0.5 block">現場評估拆結費用 300元～2000元</span>
+                                </div>
+                                <i data-lucide="chevron-down" class="w-4 h-4 text-brand-light transition-transform duration-300" id="matting-arrow"></i>
+                            </label>
+
+                            <div id="matting-details" class="hidden transition-all duration-300 ease-in-out">
+                                <div class="bg-white/60 rounded-xl border border-brand-primary/20 p-4 space-y-3 relative">
+                                    <div class="space-y-4">
+                                        <div class="space-y-2">
+                                            <h5 class="text-xs font-bold text-brand-dark border-l-4 border-brand-primary pl-2">毛髮打結處理方式（請擇一勾選）</h5>
+                                            <p class="text-[11px] text-brand-light leading-relaxed text-justify">
+                                                如毛孩於美容過程中發現有毛髮打結、糾結或毛球情形，飼主同意由本店依下列方式處理，並自行勾選確認：
+                                            </p>
+                                        </div>
+
+                                        <div class="space-y-3">
+                                            <label class="block p-3 rounded-lg border border-brand-primary/10 bg-white/80 cursor-pointer hover:border-brand-primary/50 transition-colors">
+                                                <div class="flex items-start gap-3">
+                                                    <input type="radio" name="mattingChoice" value="拆結處理" class="mt-1 accent-brand-primary shrink-0 w-4 h-4">
+                                                    <div class="space-y-1">
+                                                        <span class="text-xs font-bold text-brand-text block">方案一 | 拆結處理 (需另計費)</span>
+                                                        <p class="text-[10px] text-brand-light leading-relaxed text-justify opacity-80">
+                                                            本人同意由美容師進行拆結處理，並願意支付拆結費用。本人了解拆結過程中可能產生毛髮斷裂、毛量減少或外觀不均屬正常情況，並同意不因此提出異議。<br>
+                                                            <span class="text-red-500 font-bold">拆結費用為 NT$300～NT$2000不等</span>，將依毛髮打結之嚴重程度、範圍及實際施作時間評估。<br>
+                                                            本店將於美容開始前說明並當場報價，經飼主同意後才會進行，本人了解並同意本店不會於美容過程中臨時加價或就地起價。
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </label>
+
+                                            <label class="block p-3 rounded-lg border border-brand-primary/10 bg-white/80 cursor-pointer hover:border-brand-primary/50 transition-colors">
+                                                <div class="flex items-start gap-3">
+                                                    <input type="radio" name="mattingChoice" value="直接修剪" class="mt-1 accent-brand-primary shrink-0 w-4 h-4">
+                                                    <div class="space-y-1">
+                                                        <span class="text-xs font-bold text-brand-text block">方案二 | 不拆結，直接修剪</span>
+                                                        <p class="text-[10px] text-brand-light leading-relaxed text-justify opacity-80">
+                                                            本人不願意支付拆結費用，同意美容師於遇到打結時，直接修剪糾結毛髮。<br>
+                                                            本人了解修剪後外觀可能出現長短不一、局部稀疏或不平整之情形，並表示可接受，不因此提出異議。
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </label>
+                                        </div>
+
+                                        <div class="bg-brand-bg/80 p-3 rounded-lg space-y-2 border border-brand-primary/10">
+                                            <div class="space-y-1">
+                                                <span class="text-[10px] font-bold text-brand-dark block">補充說明一：</span>
+                                                <p class="text-[10px] text-brand-light leading-relaxed text-justify">
+                                                    飼主了解並同意，實際處理方式仍將由美容師依毛孩當下毛況、皮膚狀態及安全考量，進行專業判斷並採取最適合之處理方式。
+                                                </p>
+                                            </div>
+                                            <div class="space-y-1">
+                                                <span class="text-[10px] font-bold text-brand-dark block">補充說明二：</span>
+                                                <p class="text-[10px] text-brand-light leading-relaxed text-justify">
+                                                    如美容師評估毛髮打結情況已嚴重影響毛孩皮膚健康，或在處理過程中可能造成明顯疼痛、高度壓力、受傷風險，基於動物福利與安全考量，本店保有拒絕繼續美容或中止服務之權利。<br>
+                                                    飼主了解並同意，上述情況不視為本店違約，並願意配合後續適當處理建議（如直接剃光）。
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="space-y-4 pt-4 border-t border-brand-primary/10">
+                            <h4 class="text-xs font-bold text-brand-text flex items-center gap-1">
+                                <i data-lucide="clock" class="w-3 h-3 text-brand-primary"></i> 逾時與安置費用說明
+                            </h4>
+                            
+                            <div class="bg-[#FFF9F2] border border-[#E6CCCA]/50 rounded-xl p-4 relative overflow-hidden">
+                                <ul class="space-y-3">
+                                    <li class="flex items-center gap-2">
+                                        <span class="bg-[#8A7B70] text-white text-[10px] px-2 py-0.5 rounded font-bold shrink-0">1小時內</span>
+                                        <span class="text-xs text-brand-text font-bold">免收費。</span>
+                                    </li>
+                                    <li class="flex items-center gap-2">
+                                        <span class="bg-[#C7B299] text-white text-[10px] px-2 py-0.5 rounded font-bold shrink-0">超過1小時</span>
+                                        <span class="text-xs text-brand-text font-bold">以 1 小時計算 ($200/hr)。</span>
+                                    </li>
+                                    <li class="pt-2 mt-1">
+                                        <div class="bg-red-50 border border-red-200 rounded-lg p-3 shadow-sm">
+                                            <div class="flex items-start gap-2">
+                                                <i data-lucide="alert-triangle" class="w-4 h-4 text-red-500 shrink-0 mt-0.5"></i>
+                                                <p class="text-[11px] text-red-800 leading-relaxed text-justify font-bold">
+                                                    超過 1 小時以上，本店將先行 <span class="bg-red-200 text-red-900 px-1 rounded">安置犬貓</span> (提供水、飼料、貓砂)，屆時將收取必要之安置費用。
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="space-y-4 pt-4 border-t border-brand-primary/10">                        
 <div class="space-y-4 pt-4 border-t border-brand-primary/10">
                             <h4 class="text-xs font-bold text-brand-text flex items-center gap-1">
                                 <i data-lucide="wallet" class="w-3 h-3 text-brand-primary"></i> 支付方式 *
