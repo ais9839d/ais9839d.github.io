@@ -3,12 +3,13 @@
 <head>
     <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>麥克諾尼 | 日式寵物沙龍</title>
 <meta name="description" content="日式寵物美容、洗護專門店">
     <link rel="icon" href="logo.jpg">
     <link rel="apple-touch-icon" href="logo.jpg">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>   
     <script src="https://cdn.tailwindcss.com"></script>
 
     <script>
@@ -160,7 +161,19 @@
     linear-gradient(90deg, #e5e7eb 1px, transparent 1px);
     background-size: 20px 20px;
 }
-
+    /* 針對簽名 Modal 的底部按鈕區塊修復 */
+    #signature-modal {
+        /* 確保 Modal 高度不超過視窗，並使用 Flex 排版 */
+        height: 100vh; 
+        height: 100dvh; /* 針對手機瀏覽器動態高度 */
+    }
+    
+    /* 這是畫布的中間區塊 */
+    #signature-modal .flex-1 {
+        /* 確保它會撐開中間的空間，但不會把按鈕擠出去 */
+        min-height: 0; 
+        position: relative;
+    }
 /* Toast 提示樣式 - 麥克諾尼風格 */
         .toast-container {
             position: fixed;
@@ -253,8 +266,9 @@
         
         <div id="view-home" class="view-section active animate-fade-in space-y-8">
             <div class="text-center space-y-4">
-                <div class="w-28 h-28 mx-auto mb-2 rounded-full p-1 border border-brand-primary/20 overflow-hidden">
-                    <img src="logo.jpg" onerror="this.src='https://placehold.co/200x200?text=Logo'" alt="Logo" class="w-full h-full object-cover rounded-full">
+    <div class="w-28 h-28 mx-auto mb-2 rounded-full p-1 border border-brand-primary/20 overflow-hidden cursor-pointer" onclick="app.checkAdminAccess()">
+        <img src="logo.jpg" onerror="this.src='https://placehold.co/200x200?text=Logo'" alt="Logo" class="w-full h-full object-cover rounded-full">
+    </div>
                 </div>
                 <h1 class="text-2xl font-bold font-serif text-brand-primary italic">毛小孩的笑容是最甜蜜的糖果</h1>
                 <div class="flex flex-wrap justify-center gap-2 px-4">
@@ -385,7 +399,7 @@
     <div class="space-y-1">                        <label class="text-xs font-bold text-brand-light ml-1">手機號碼 *</label>
                         <div class="flex gap-2">
                             <input type="tel" name="phone" id="phone" class="input-style" placeholder="09xxxxxxxx" required>
-                            <button type="button" onclick="app.autoFillDemo()" class="whitespace-nowrap px-4 bg-brand-primary text-white text-xs font-bold rounded-xl shadow-sm active:scale-95 transition-transform">帶入紀錄</button>
+<button type="button" onclick="app.handleSearchOldCustomer()" class="whitespace-nowrap px-4 bg-brand-primary text-white text-xs font-bold rounded-xl shadow-sm active:scale-95 transition-transform">帶入紀錄</button>
                         </div>
                         <p class="text-[12px] text-brand-light/80 pl-1 flex items-center gap-1 pt-1">
                             <i data-lucide="info" class="w-3 h-3"></i>
@@ -641,7 +655,7 @@
                                         <div class="flex items-start gap-2">
                                             <span class="text-[11px] font-black text-brand-primary shrink-0 mt-0.5 border border-brand-primary/30 px-1.5 rounded bg-white">基礎</span>
                                             <p class="text-[11px] text-brand-dark leading-relaxed">
-                                                使用 <span class="font-bold text-brand-text">日本 ZOIC 柔順洗護</span>。
+                                                使用 <span class="font-bold text-brand-text">日本製 ZOIC 胺基酸植萃洗+護</span>。
                                             </p>
                                         </div>
                                         <div class="flex items-start gap-2">
@@ -698,7 +712,7 @@
                                 <label class="text-xs font-bold text-brand-dark ml-1">基礎報價 (由店員告知後填寫) *</label>
                                 <div class="relative">
                                     <span class="absolute left-3 top-2.5 text-brand-light text-xs font-bold">$</span>
-                                    <input type="number" id="basePrice" class="input-style pl-7 py-2 font-bold text-brand-text" placeholder="請輸入基礎金額" oninput="app.calculateTotal()">
+<input type="number" id="basePrice" class="input-style pl-7 py-2 font-bold text-brand-text" placeholder="請輸入基礎金額" oninput="app.calculateTotal()" required>
                                 </div>
                                 <p class="text-[10px] text-red-500 font-bold bg-red-50 border border-red-100 px-2 py-1.5 rounded-lg flex items-start gap-1">
                                     <i data-lucide="alert-circle" class="w-3 h-3 shrink-0 mt-0.5"></i>
@@ -953,773 +967,1096 @@
     </div>
 
     <script>
-// Toast 工具函數 (新版)
-        const toast = {
-            container: null,
-            init() { this.container = document.getElementById('toast-container'); },
-            show(message, type = 'success', title = '') {
-                if (!this.container) this.init();
-                const toastEl = document.createElement('div');
-                toastEl.className = `toast ${type}`;
-                
-                // 設定顏色變數與標題
-                let iconColor = 'text-brand-primary';
-                let defaultTitle = '通知';
-                let iconName = 'info';
+        // --- 0. 先定義一個空的 app 物件，讓 HTML 的 onclick 不會報錯 ---
+        const app = {};
 
-                switch(type) {
-                    case 'success':
-                        iconColor = 'text-green-500';
-                        defaultTitle = '成功';
-                        iconName = 'check-circle-2';
-                        break;
-                    case 'error':
-                        iconColor = 'text-red-500';
-                        defaultTitle = '錯誤';
-                        iconName = 'alert-circle';
-                        break;
-                    case 'warning':
-                        iconColor = 'text-amber-500';
-                        defaultTitle = '注意';
-                        iconName = 'alert-triangle';
-                        break;
-                }
-
-                const finalTitle = title || defaultTitle;
-                
-                toastEl.innerHTML = `
-                    <i data-lucide="${iconName}" class="toast-icon ${iconColor}"></i>
-                    <div class="toast-content">
-                        <div class="toast-title">${finalTitle}</div>
-                        <div class="toast-message">${message}</div>
-                    </div>
-                `;
-                
-                this.container.appendChild(toastEl);
-                lucide.createIcons();
-                
-                // 3秒後移除
-                setTimeout(() => {
-                    toastEl.classList.add('removing');
-                    setTimeout(() => toastEl.remove(), 300);
-                }, 3000);
+        // --- 1. 確保頁面與 Supabase 載入完成後再執行主要邏輯 ---
+        window.addEventListener('load', () => {
+            
+            // 初始化 Supabase
+            if (window.supabase) {
+                const SUPABASE_URL = 'https://sudsagtksfdgkvxjtcze.supabase.co'; 
+                const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN1ZHNhZ3Rrc2ZkZ2t2eGp0Y3plIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkyNDc3ODIsImV4cCI6MjA4NDgyMzc4Mn0.J_ZH5rA2uSG2m5pt76-7l95etd9reB4pePQDZs5GZMI'; 
+                window.supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+            } else {
+                console.error("Supabase library failed to load.");
+                alert("系統載入失敗，請重新整理頁面。");
+                return;
             }
-        };
 
-        // 應用程式主物件
-        const app = {
-            // 狀態變數
-            state: {
-                lineConfirmed: false,
-                currentView: 'home'
-            },
+            // Toast 工具
+            const toast = {
+                container: null,
+                init() { this.container = document.getElementById('toast-container'); },
+                show(message, type = 'success', title = '') {
+                    if (!this.container) this.init();
+                    const toastEl = document.createElement('div');
+                    toastEl.className = `toast ${type}`;
+                    
+                    let iconColor = 'text-brand-primary';
+                    let defaultTitle = '通知';
+                    let iconName = 'info';
 
-            // 資料設定
-            data: {
-                bannerImages: [
-                    'line_oa_chat_260116_170310_group_0.jpg',
-                    'line_oa_chat_260116_170310_group_1.jpg',
-                    'line_oa_chat_260116_170310_group_2.jpg',
-                    'line_oa_chat_260116_170310_group_3.jpg',
-                    'line_oa_chat_260116_170310_group_4.jpg',
-                    'line_oa_chat_260116_170310_group_5.jpg',
-                    'line_oa_chat_260116_170310_group_6.jpg',
-                    'line_oa_chat_260116_170310_group_7.jpg',
-                    'line_oa_chat_260116_170322.jpg',
-                ],
-                
-                productList: [
-                    { title: "紅寶系列", sub: "進階美容專用", img: "line_oa_chat_260116_170310_group_0.jpg" },
-                    { title: "魚子醬系列", sub: "頂級精華修復", img: "line_oa_chat_260116_170310_group_1.jpg" },
-                    { title: "艾詩貝客製化皮膚調理", sub: "礦物元素SPA", img: "line_oa_chat_260116_170310_group_2.jpg" },
-                    { title: "RENADOG", sub: "韓國專業造型剪毛洗護SPA", img: "line_oa_chat_260116_170310_group_3.jpg" },
-                    { title: "SKIMO 頂級奈米護膚", sub: "日系新感覺保濕", img: "line_oa_chat_260116_170310_group_4.jpg" },
-                    { title: "Furmake EX", sub: "專業蓬鬆洗劑", img: "line_oa_chat_260116_170310_group_5.jpg" },
-                    { title: "ZOIC Cut-X", sub: "日本職人專用造型噴霧", img: "line_oa_chat_260116_170310_group_6.jpg" },
-                    { title: "ZOIC炭酸泉", sub: "深層清潔美肌", img: "line_oa_chat_260116_170310_group_7.jpg" }
-                ],
-                
-                dogSpas: [
-                    { name: '日本 ZOIC 碳酸 SPA', price: '+199' },
-                    { name: '日本頂級 SKIMO 奈米 SPA', price: '+399' },
-                    { name: '義大利魚子醬 SPA', price: '+399' },
-                    { name: '義大利柑橘廢毛SPA', price: '+399' },
-                    { name: '義大利活化抗老百香果SPA', price: '+399' },
-                    { name: '義大利客製化皮膚調理 SPA', price: '+399~599' },
-                    { name: '美國去油護理服務/除廢毛 SPA', price: '+300~500' },
-                ],
-                
-                catSpas: [
-                    { name: '義大利客製化皮膚調理 SPA', price: '+399' },
-                    { name: '義大利魚子醬 SPA', price: '+399' },
-                    { name: '義大利柑橘/百香果代謝廢毛 SPA', price: '+399' },
-                    { name: '日本 ZOIC 碳酸 SPA', price: '+199' },
-                    { name: '日本頂級 SKIMO 奈米 SPA', price: '+399' },
-                    { name: '美國去油護理服務/除廢毛 SPA', price: '+300~500' },
-                ]
-            },
+                    switch(type) {
+                        case 'success':
+                            iconColor = 'text-green-500';
+                            defaultTitle = '成功';
+                            iconName = 'check-circle-2';
+                            break;
+                        case 'error':
+                            iconColor = 'text-red-500';
+                            defaultTitle = '錯誤';
+                            iconName = 'alert-circle';
+                            break;
+                        case 'warning':
+                            iconColor = 'text-amber-500';
+                            defaultTitle = '注意';
+                            iconName = 'alert-triangle';
+                            break;
+                    }
 
-// 初始化
-init() {
-    // 初始化圖示
-    lucide.createIcons();
-    
-    // 初始化Toast
-    toast.init();
-    
-    // 渲染內容
-    this.renderBanner();
-    this.renderProducts();
-    this.renderSpaList('dog-spa-container', this.data.dogSpas);
-    this.renderSpaList('cat-spa-container', this.data.catSpas);
-    
-    // 檢查 Hash 路由
-    const hash = window.location.hash.replace('#', '');
-    if(hash) this.switchView(hash);
-    
-    // 初始化簽名板
-    this.signaturePad.init();
-},
-
-            // 渲染 Banner
-            renderBanner() {
-                const bannerContainer = document.getElementById('banner-container');
-                // 重複四次以利無限捲動
-                const allImages = [...this.data.bannerImages, ...this.data.bannerImages, ...this.data.bannerImages, ...this.data.bannerImages];
-                bannerContainer.innerHTML = allImages.map(src => 
-                    `<img src="${src}" onerror="this.style.display='none'" class="h-full w-[10%] object-cover" alt="banner">`
-                ).join('');
-            },
-
-            // 渲染產品
-            renderProducts() {
-                const productContainer = document.getElementById('product-list');
-                productContainer.innerHTML = this.data.productList.map(item => `
-                    <div class="bg-white p-3 rounded-2xl shadow-sm space-y-3">
-                      <div class="aspect-square rounded-xl overflow-hidden bg-[#fafafa] flex items-center justify-center">
-                        <img src="${item.img}" onerror="this.src='https://placehold.co/150x150?text=Product'" class="max-w-full max-h-full object-contain p-1" alt="${item.title}" />
-                      </div>
-                      <div class="px-1 text-center">
-                        <h4 class="text-xs font-bold text-brand-text leading-tight">${item.title}</h4>
-                        <p class="text-[10px] text-brand-light leading-tight">${item.sub}</p>
-                      </div>
-                    </div>
-                `).join('');
-            },
-
-            // 渲染 SPA 列表
-            renderSpaList(id, list) {
-                document.getElementById(id).innerHTML = list.map(spa => `
-                    <label class="flex items-center justify-between p-3 rounded-xl border border-transparent hover:bg-white/80 bg-white/40 transition-all cursor-pointer">
-                        <div class="flex items-center gap-3">
-                            <input type="checkbox" name="spaUpgrades" value="${spa.name}" data-price="${spa.price}" onchange="app.calculateTotal()" class="accent-brand-primary">
-                            <span class="text-xs font-bold text-brand-text">${spa.name}</span>
+                    const finalTitle = title || defaultTitle;
+                    
+                    toastEl.innerHTML = `
+                        <i data-lucide="${iconName}" class="toast-icon ${iconColor}"></i>
+                        <div class="toast-content">
+                            <div class="toast-title">${finalTitle}</div>
+                            <div class="toast-message">${message}</div>
                         </div>
-                        <span class="text-xs font-bold text-brand-primary">${spa.price}元</span>
-                    </label>
-                `).join('');
-            },
-
-            // 視圖切換
-            switchView(viewName) {
-                // 隱藏所有 section
-                document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
-                // 顯示目標 section
-                const target = document.getElementById('view-' + viewName);
-                if(target) target.classList.add('active');
-                
-                // 捲動到頂部
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-
-                // 控制導航按鈕
-                const backBtn = document.getElementById('back-btn');
-                if (viewName === 'home') {
-                    backBtn.classList.add('hidden');
-                    history.pushState(null, null, ' '); // 清除 hash
-                } else {
-                    backBtn.classList.remove('hidden');
-                    window.location.hash = viewName;
-                }
-                
-                // 更新當前視圖
-                this.state.currentView = viewName;
-            },
-
-            // LINE 確認按鈕
-            toggleLineCheck() {
-                this.state.lineConfirmed = !this.state.lineConfirmed;
-                const btn = document.getElementById('line-check-btn');
-                const icon = document.getElementById('line-check-icon');
-                const text = document.getElementById('line-check-text');
-
-                if (this.state.lineConfirmed) {
-                    btn.className = "w-full flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-bold transition-all duration-300 border bg-[#06C755] text-white border-[#06C755] shadow-lg";
-                    icon.className = "w-4 h-4 rounded-full border border-white bg-white/20 flex items-center justify-center";
-                    icon.innerHTML = '<i data-lucide="check" size="10" class="w-3 h-3"></i>';
-                    text.innerText = "OK！我已加入並傳送貼圖";
+                    `;
+                    
+                    this.container.appendChild(toastEl);
                     lucide.createIcons();
-                } else {
-                    btn.className = "w-full flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-bold transition-all duration-300 border bg-white text-brand-light border-slate-200";
-                    icon.className = "w-4 h-4 rounded-full border border-current flex items-center justify-center";
-                    icon.innerHTML = '';
-                    text.innerText = "確認：我已完成上述兩步驟";
+                    
+                    setTimeout(() => {
+                        toastEl.classList.add('removing');
+                        setTimeout(() => toastEl.remove(), 300);
+                    }, 3000);
                 }
-            },
+            };
 
-            // 寵物種類切換
-            selectSpecies(species, labelEl) {
-                // UI 更新
-                document.querySelectorAll('.option-card input[name="petSpecies"]').forEach(el => {
-                    el.parentElement.classList.remove('selected', 'bg-white', 'border-brand-primary', 'shadow-md');
-                });
-                labelEl.classList.add('selected', 'bg-white', 'border-brand-primary', 'shadow-md');
-                labelEl.querySelector('input').checked = true;
+            // --- 2. 將原本的 app 物件內容賦值給外部的 app ---
+            // 這樣外部 HTML 的 onclick 就能呼叫到這些方法了
+            Object.assign(app, {
+                state: {
+                    lineConfirmed: false,
+                    currentView: 'home'
+                },
 
-                // SPA 列表切換
-                if (species === '犬') {
-                    document.getElementById('dog-spa-list').classList.remove('hidden');
-                    document.getElementById('cat-spa-list').classList.add('hidden');
-                } else {
-                    document.getElementById('dog-spa-list').classList.add('hidden');
-                    document.getElementById('cat-spa-list').classList.remove('hidden');
-                }
-            },
+                data: {
+                    bannerImages: [
+                        'line_oa_chat_260116_170310_group_0.jpg',
+                        'line_oa_chat_260116_170310_group_1.jpg',
+                        'line_oa_chat_260116_170310_group_2.jpg',
+                        'line_oa_chat_260116_170310_group_3.jpg',
+                        'line_oa_chat_260116_170310_group_4.jpg',
+                        'line_oa_chat_260116_170310_group_5.jpg',
+                        'line_oa_chat_260116_170310_group_6.jpg',
+                        'line_oa_chat_260116_170310_group_7.jpg',
+                        'line_oa_chat_260116_170322.jpg',
+                    ],
+                    
+                    productList: [
+                        { title: "紅寶系列", sub: "進階美容專用", img: "line_oa_chat_260116_170310_group_0.jpg" },
+                        { title: "魚子醬系列", sub: "頂級精華修復", img: "line_oa_chat_260116_170310_group_1.jpg" },
+                        { title: "艾詩貝客製化皮膚調理", sub: "礦物元素SPA", img: "line_oa_chat_260116_170310_group_2.jpg" },
+                        { title: "RENADOG", sub: "韓國專業造型剪毛洗護SPA", img: "line_oa_chat_260116_170310_group_3.jpg" },
+                        { title: "SKIMO 頂級奈米護膚", sub: "日系新感覺保濕", img: "line_oa_chat_260116_170310_group_4.jpg" },
+                        { title: "Furmake EX", sub: "專業蓬鬆洗劑", img: "line_oa_chat_260116_170310_group_5.jpg" },
+                        { title: "ZOIC Cut-X", sub: "日本職人專用造型噴霧", img: "line_oa_chat_260116_170310_group_6.jpg" },
+                        { title: "ZOIC炭酸泉", sub: "深層清潔美肌", img: "line_oa_chat_260116_170310_group_7.jpg" }
+                    ],
+                    
+                    dogSpas: [
+                        { name: '日本 ZOIC 碳酸 SPA', price: '+199' },
+                        { name: '日本頂級 SKIMO 奈米 SPA', price: '+399' },
+                        { name: '義大利魚子醬 SPA', price: '+399' },
+                        { name: '義大利柑橘廢毛SPA', price: '+399' },
+                        { name: '義大利活化抗老百香果SPA', price: '+399' },
+                        { name: '義大利客製化皮膚調理 SPA', price: '+399~599' },
+                        { name: '美國去油護理服務/除廢毛 SPA', price: '+300~500' },
 
-// 高風險檢查
-            checkRisk(age) {
-                // 取得元件
-                const warningBanner = document.getElementById('risk-warning-banner');
-                const modalRiskContent = document.getElementById('modal-risk-content');
-                
-                // 取得勾選框容器
-                const riskContainer = document.getElementById('risk-checkbox-container');
-                const normalContainer = document.getElementById('normal-checkbox-container');
-                
-                // 取得實際的 input (為了控制 required)
-                const riskInput = document.getElementById('risk-checkbox');
-                const normalInput = document.getElementById('agreement');
-                
-                const ageNum = parseFloat(age);
-                
-                if (!isNaN(ageNum) && (ageNum >= 8 || ageNum <= 1)) {
-                    // === 高風險模式 ===
+                    ],
                     
-                    // 1. 顯示紅色警示卡片
-                    warningBanner.classList.remove('hidden');
-                    modalRiskContent.classList.remove('hidden');
-                    
-                    // 2. 切換勾選框：顯示紅色，隱藏一般
-                    riskContainer.classList.remove('hidden');
-                    normalContainer.classList.add('hidden');
-                    
-                    // 3. 設定必填邏輯 (紅色必填，一般免填)
-                    riskInput.required = true;
-                    normalInput.required = false;
-                    normalInput.checked = false; // 清除一般勾選
-                    
-                    toast.show('檢測為高風險族群，請務必詳閱紅色告知條款', 'warning');
-                } else {
-                    // === 一般模式 ===
-                    
-                    // 1. 隱藏紅色警示
-                    warningBanner.classList.add('hidden');
-                    modalRiskContent.classList.add('hidden');
-                    
-                    // 2. 切換勾選框：顯示一般，隱藏紅色
-                    riskContainer.classList.add('hidden');
-                    normalContainer.classList.remove('hidden');
-                    
-                    // 3. 設定必填邏輯 (一般必填，紅色免填)
-                    riskInput.required = false;
-                    riskInput.checked = false; // 清除高風險勾選
-                    normalInput.required = true;
-                }
-            },
+                    catSpas: [
+                        { name: '義大利客製化皮膚調理 SPA', price: '+399' },
+                        { name: '義大利魚子醬 SPA', price: '+399' },
+                        { name: '義大利柑橘/百香果代謝廢毛 SPA', price: '+399' },
+                        { name: '日本 ZOIC 碳酸 SPA', price: '+199' },
+                        { name: '日本頂級 SKIMO 奈米 SPA', price: '+399' },
+                        { name: '美國去油護理服務/除廢毛 SPA', price: '+300~500' },
+                    ]
+                },
 
-// 開關條款 Modal (新增 type 參數)
-            toggleTermsModal(show, type = 'general') {
-                const modal = document.getElementById('terms-modal');
-                const title = document.getElementById('modal-title');
-                const generalContent = document.getElementById('modal-general-content');
-                const riskContent = document.getElementById('modal-risk-content');
-
-                if (show) {
-                    modal.classList.remove('hidden');
-                    modal.classList.add('flex');
-                    document.body.style.overflow = 'hidden'; // 禁止背景捲動
+                init() {
+                    lucide.createIcons();
+                    toast.init();
+                    this.renderBanner();
+                    this.renderProducts();
+                    this.renderSpaList('dog-spa-container', this.data.dogSpas);
+                    this.renderSpaList('cat-spa-container', this.data.catSpas);
                     
-                    // 根據 type 決定顯示內容
-                    if (type === 'general') {
-                        // 顯示一般，隱藏高風險
-                        title.innerText = '美容服務契約條款';
-                        generalContent.classList.remove('hidden');
-                        riskContent.classList.add('hidden');
-                    } else if (type === 'risk') {
-                        // 顯示高風險，隱藏一般
-                        title.innerText = '高風險風險告知';
-                        generalContent.classList.add('hidden');
-                        riskContent.classList.remove('hidden');
+                    const hash = window.location.hash.replace('#', '');
+                    if(hash) this.switchView(hash);
+                    
+                    this.signaturePad.init();
+                },
+
+                renderBanner() {
+                    const bannerContainer = document.getElementById('banner-container');
+                    const allImages = [...this.data.bannerImages, ...this.data.bannerImages, ...this.data.bannerImages, ...this.data.bannerImages];
+                    bannerContainer.innerHTML = allImages.map(src => 
+                        `<img src="${src}" onerror="this.style.display='none'" class="h-full w-[10%] object-cover" alt="banner">`
+                    ).join('');
+                },
+
+                renderProducts() {
+                    const productContainer = document.getElementById('product-list');
+                    productContainer.innerHTML = this.data.productList.map(item => `
+                        <div class="bg-white p-3 rounded-2xl shadow-sm space-y-3">
+                          <div class="aspect-square rounded-xl overflow-hidden bg-[#fafafa] flex items-center justify-center">
+                            <img src="${item.img}" onerror="this.src='https://placehold.co/150x150?text=Product'" class="max-w-full max-h-full object-contain p-1" alt="${item.title}" />
+                          </div>
+                          <div class="px-1 text-center">
+                            <h4 class="text-xs font-bold text-brand-text leading-tight">${item.title}</h4>
+                            <p class="text-[10px] text-brand-light leading-tight">${item.sub}</p>
+                          </div>
+                        </div>
+                    `).join('');
+                },
+
+                renderSpaList(id, list) {
+                    const container = document.getElementById(id);
+                    
+                    // 1. 先清空容器
+                    container.innerHTML = '';
+                    
+                    // 2. 生成 JS 列表中的項目 (例如: 碳酸 SPA、魚子醬 SPA...)
+                    list.forEach(spa => {
+                        const label = document.createElement('label');
+                        label.className = 'flex items-center justify-between p-3 rounded-xl border border-transparent hover:bg-white/80 bg-white/40 transition-all cursor-pointer';
+                        label.innerHTML = `
+                            <div class="flex items-center gap-3">
+                                <input type="checkbox" name="spaUpgrades" value="${spa.name}" data-price="${spa.price}" onchange="app.calculateTotal()" class="accent-brand-primary">
+                                <span class="text-xs font-bold text-brand-text">${spa.name}</span>
+                            </div>
+                            <span class="text-xs font-bold text-brand-primary">${spa.price}元</span>
+                        `;
+                        container.appendChild(label);
+                    });
+
+                    // 3. 手動新增「刷牙服務」區塊 (含提示文字) - 這段永遠會加在最後
+                    const brushLabel = document.createElement('label');
+                    brushLabel.className = 'flex items-start gap-3 p-3 rounded-xl border border-brand-primary/20 bg-white/80 transition-all cursor-pointer group hover:bg-white mt-2';
+                    brushLabel.innerHTML = `
+                        <input type="checkbox" name="spaUpgrades" value="刷牙服務" data-price="+50" onchange="app.calculateTotal()" class="accent-brand-primary mt-1 shrink-0">
+                        <div class="flex-1 space-y-1">
+                            <div class="flex items-center justify-between">
+                                <span class="text-xs font-bold text-brand-text">刷牙服務</span>
+                                <span class="text-xs font-bold text-brand-primary">+50元</span>
+                            </div>
+                            <p class="text-[10px] text-brand-light leading-tight">請自備牙刷、牙膏，若忘記攜帶可以店內購買。</p>
+                        </div>
+                    `;
+                    container.appendChild(brushLabel);
+                },
+
+
+                switchView(viewName) {
+                    document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+                    const target = document.getElementById('view-' + viewName);
+                    if(target) target.classList.add('active');
+                    
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+                    const backBtn = document.getElementById('back-btn');
+                    if (viewName === 'home') {
+                        backBtn.classList.add('hidden');
+                        history.pushState(null, null, ' ');
+                    } else {
+                        backBtn.classList.remove('hidden');
+                        window.location.hash = viewName;
                     }
                     
-                    // 重置捲軸位置到最上方
-                    modal.querySelector('.overflow-y-auto').scrollTop = 0;
-                    
-                    lucide.createIcons();
-                } else {
-                    modal.classList.add('hidden');
-                    modal.classList.remove('flex');
-                    document.body.style.overflow = '';
-                }
-            },
+                    this.state.currentView = viewName;
+                },
 
-// 帶入歷史資料 Demo
-autoFillDemo() {
-    const phone = document.getElementById('phone').value;
-    if (phone === '0912345678') {
-        toast.show('已找到歷史紀錄！自動帶入測試資料...', 'success', '成功');
-        document.getElementById('ownerName').value = '測試飼主';
-        document.getElementById('email').value = 'test@example.com';
-        document.getElementById('ownerId').value = 'A123456789';
-        document.getElementById('address').value = '台北市松山區測試路段';
-        document.getElementById('emergencyName').value = '王小明';
-        document.getElementById('emergencyPhone').value = '0987654321';
-        document.getElementById('petName').value = '旺財';
-        document.getElementById('breed').value = '柴犬';
-        document.getElementById('ageYear').value = '5';
-        document.getElementById('weight').value = '12';
-        this.checkRisk(5);
-    } else {
-        toast.show('查無此號碼 (測試號碼: 0912345678)', 'warning', '查詢失敗');
+                toggleLineCheck() {
+                    this.state.lineConfirmed = !this.state.lineConfirmed;
+                    const btn = document.getElementById('line-check-btn');
+                    const icon = document.getElementById('line-check-icon');
+                    const text = document.getElementById('line-check-text');
+
+                    if (this.state.lineConfirmed) {
+                        btn.className = "w-full flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-bold transition-all duration-300 border bg-[#06C755] text-white border-[#06C755] shadow-lg";
+                        icon.className = "w-4 h-4 rounded-full border border-white bg-white/20 flex items-center justify-center";
+                        icon.innerHTML = '<i data-lucide="check" size="10" class="w-3 h-3"></i>';
+                        text.innerText = "OK！我已加入並傳送貼圖";
+                        lucide.createIcons();
+                    } else {
+                        btn.className = "w-full flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-bold transition-all duration-300 border bg-white text-brand-light border-slate-200";
+                        icon.className = "w-4 h-4 rounded-full border border-current flex items-center justify-center";
+                        icon.innerHTML = '';
+                        text.innerText = "確認：我已完成上述兩步驟";
+                    }
+                },
+
+                selectSpecies(species, labelEl) {
+                    document.querySelectorAll('.option-card input[name="petSpecies"]').forEach(el => {
+                        el.parentElement.classList.remove('selected', 'bg-white', 'border-brand-primary', 'shadow-md');
+                    });
+                    labelEl.classList.add('selected', 'bg-white', 'border-brand-primary', 'shadow-md');
+                    labelEl.querySelector('input').checked = true;
+
+                    if (species === '犬') {
+                        document.getElementById('dog-spa-list').classList.remove('hidden');
+                        document.getElementById('cat-spa-list').classList.add('hidden');
+                    } else {
+                        document.getElementById('dog-spa-list').classList.add('hidden');
+                        document.getElementById('cat-spa-list').classList.remove('hidden');
+                    }
+                },
+
+                checkRisk(age) {
+                    const warningBanner = document.getElementById('risk-warning-banner');
+                    const modalRiskContent = document.getElementById('modal-risk-content');
+                    const riskContainer = document.getElementById('risk-checkbox-container');
+                    const normalContainer = document.getElementById('normal-checkbox-container');
+                    const riskInput = document.getElementById('risk-checkbox');
+                    const normalInput = document.getElementById('agreement');
+                    
+                    const ageNum = parseFloat(age);
+                    
+                    if (!isNaN(ageNum) && (ageNum >= 8 || ageNum <= 1)) {
+                        warningBanner.classList.remove('hidden');
+                        modalRiskContent.classList.remove('hidden');
+                        riskContainer.classList.remove('hidden');
+                        normalContainer.classList.add('hidden');
+                        riskInput.required = true;
+                        normalInput.required = false;
+                        normalInput.checked = false;
+                        toast.show('檢測為高風險族群，請務必詳閱紅色告知條款', 'warning');
+                    } else {
+                        warningBanner.classList.add('hidden');
+                        modalRiskContent.classList.add('hidden');
+                        riskContainer.classList.add('hidden');
+                        normalContainer.classList.remove('hidden');
+                        riskInput.required = false;
+                        riskInput.checked = false;
+                        normalInput.required = true;
+                    }
+                },
+
+                toggleTermsModal(show, type = 'general') {
+                    const modal = document.getElementById('terms-modal');
+                    const title = document.getElementById('modal-title');
+                    const generalContent = document.getElementById('modal-general-content');
+                    const riskContent = document.getElementById('modal-risk-content');
+
+                    if (show) {
+                        modal.classList.remove('hidden');
+                        modal.classList.add('flex');
+                        document.body.style.overflow = 'hidden';
+                        
+                        if (type === 'general') {
+                            title.innerText = '美容服務契約條款';
+                            generalContent.classList.remove('hidden');
+                            riskContent.classList.add('hidden');
+                        } else if (type === 'risk') {
+                            title.innerText = '高風險風險告知';
+                            generalContent.classList.add('hidden');
+                            riskContent.classList.remove('hidden');
+                        }
+                        
+                        modal.querySelector('.overflow-y-auto').scrollTop = 0;
+                        lucide.createIcons();
+                    } else {
+                        modal.classList.add('hidden');
+                        modal.classList.remove('flex');
+                        document.body.style.overflow = '';
+                    }
+                },
+checkAdminAccess: function() {
+    let clickCount = parseInt(sessionStorage.getItem('logoClickCount') || '0');
+    
+    clickCount++;
+    sessionStorage.setItem('logoClickCount', clickCount);
+
+    if (clickCount >= 2) {
+        sessionStorage.setItem('logoClickCount', '0');
+        setTimeout(() => {
+            window.location.href = 'admin.html';
+        }, 500);
     }
 },
 
-
-            // 通用單選按鈕樣式切換
-            updateRadioStyle(label) {
-                // 找到同組的所有 radio label
-                const radioName = label.querySelector('input').name;
-                document.querySelectorAll(`input[name="${radioName}"]`).forEach(input => {
-                    const parent = input.closest('.option-card');
-                    if (parent) parent.classList.remove('selected', 'bg-white', 'border-brand-primary', 'shadow-md');
-                });
-                // 點亮自己
-                label.classList.add('selected', 'bg-white', 'border-brand-primary', 'shadow-md');
-                label.querySelector('input').checked = true;
-            },
-
-            // 切換輸入框顯示 (用於病史與晶片)
-            toggleInput(elementId, show) {
-                const el = document.getElementById(elementId);
-                if (show) {
-                    el.classList.remove('hidden');
-                    el.required = true;
-                    setTimeout(() => el.focus(), 100);
-                } else {
-                    el.classList.add('hidden');
-                    el.required = false;
-                    el.value = '';
-                }
-            },
-
-            // 控制其他項目輸入框顯示
-            toggleOtherInput(show) {
-                const container = document.getElementById('other-input-container');
-                const input = document.getElementById('otherServiceDetail');
-                
-                // 更新卡片選中樣式
-                document.querySelectorAll('input[name="serviceType"]').forEach(radio => {
-                    const card = radio.closest('.option-card');
-                    if(radio.checked) {
-                        card.classList.add('selected', 'bg-white', 'border-brand-primary', 'shadow-md');
-                    } else {
-                        card.classList.remove('selected', 'bg-white', 'border-brand-primary', 'shadow-md');
+                // --- 搜尋舊客功能 (取代原本的 autoFillDemo) ---
+                handleSearchOldCustomer: async function() {
+                    const phoneInput = document.getElementById('phone');
+                    const phone = phoneInput.value.trim();
+                    
+                    if (!phone || phone.length !== 10) {
+                        toast.show('請先輸入有效的手機號碼 (10碼)', 'error');
+                        return;
                     }
-                });
+                    
+                    // 顯示按鈕 Loading 狀態
+                    const btn = document.querySelector('button[onclick="app.handleSearchOldCustomer()"]');
+                    const originalText = btn.innerHTML;
+                    btn.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i>';
+                    btn.disabled = true;
+                    lucide.createIcons();
 
-                if (show) {
-                    container.classList.remove('hidden');
-                    input.required = true;
-                    setTimeout(() => input.focus(), 100);
-                } else {
-                    container.classList.add('hidden');
-                    input.required = false;
-                    input.value = ''; // 切換掉時清空輸入
-                }
-            },
-
-            // 切換打結選項顯示
-            toggleMatting(label) {
-                const checkbox = label.querySelector('input[type="checkbox"]');
-                const details = document.getElementById('matting-details');
-                const arrow = document.getElementById('matting-arrow');
-
-                // 使用 setTimeout 確保取得到點擊後的 checked 狀態
-                setTimeout(() => {
-                    if (checkbox.checked) {
-                        details.classList.remove('hidden');
-                        arrow.style.transform = 'rotate(180deg)';
-                        label.classList.add('selected', 'bg-white', 'border-brand-primary', 'shadow-md');
-                    } else {
-                        details.classList.add('hidden');
-                        arrow.style.transform = 'rotate(0deg)';
-                        label.classList.remove('selected', 'bg-white', 'border-brand-primary', 'shadow-md');
+                    try {
+                        // 查詢資料庫中是否有相同手機號碼的客戶
+                        const { data, error } = await window.supabaseClient
+                            .from('bookings')
+                            .select('*')
+                            .eq('owner_phone', phone)
+                            .order('created_at', { ascending: false });
                         
-                        // 取消勾選時，清空裡面的選擇，避免誤判
-                        document.querySelectorAll('input[name="mattingChoice"]').forEach(r => r.checked = false);
+                        if (error) throw error;
+                        
+                        if (data && data.length > 0) {
+                            // 去重邏輯：如果同一隻寵物有多筆紀錄，只取最新的一筆
+                            const uniquePets = {};
+                            data.forEach(record => {
+                                const name = record.pet_name;
+                                if (!uniquePets[name]) {
+                                    uniquePets[name] = record;
+                                }
+                            });
+                            
+                            // 將物件轉回陣列並渲染選單
+                            const petList = Object.values(uniquePets);
+                            this.renderPetSelectionModal(petList);
+                        } else {
+                            toast.show('查無此手機號碼的舊客資料', 'warning');
+                        }
+                    } catch (error) {
+                        console.error('查詢錯誤:', error);
+                        toast.show('查詢失敗，請稍後再試', 'error');
+                    } finally {
+                        // 恢復按鈕狀態
+                        btn.innerHTML = originalText;
+                        btn.disabled = false;
+                        lucide.createIcons();
                     }
-                }, 0);
-            },
+                },
 
-// 計算總金額功能
-            calculateTotal() {
-                // 1. 取得基礎報價
-                let base = parseInt(document.getElementById('basePrice').value) || 0;
+                // 輔助函數：渲染寵物選擇列表
+                renderPetSelectionModal: function(pets) {
+                    const modal = document.getElementById('petSelectModal');
+                    const container = document.getElementById('petListContainer');
+                    const content = document.getElementById('petSelectContent');
+                    
+                    container.innerHTML = ''; // 清空舊內容
 
-                // 2. 計算升級項目
-                let upgradeMin = 0;
-                let upgradeMax = 0;
-                let hasVariable = false;
-                
-                // 檢查是否有選中任何升級項目
-                const checkedUpgrades = document.querySelectorAll('input[name="spaUpgrades"]:checked');
-                const upgradeRow = document.getElementById('upgrade-row');
-
-                // 控制小計行的顯示/隱藏
-                if (checkedUpgrades.length > 0) {
-                    upgradeRow.classList.remove('hidden');
-                } else {
-                    upgradeRow.classList.add('hidden');
-                }
-
-                checkedUpgrades.forEach(cb => {
-                    let priceStr = cb.dataset.price.replace('+', '').replace(/元/g, '').trim();
-                    if (priceStr.includes('~')) {
-                        let parts = priceStr.split('~');
-                        upgradeMin += parseInt(parts[0]);
-                        upgradeMax += parseInt(parts[1]);
-                        hasVariable = true;
-                    } else {
-                        let val = parseInt(priceStr);
-                        upgradeMin += val;
-                        upgradeMax += val;
-                    }
-                });
-
-                // 3. 更新介面顯示
-                let upgradeText = hasVariable ? `+$${upgradeMin} ~ $${upgradeMax}` : `+$${upgradeMin}`;
-                document.getElementById('upgradeTotalDisplay').innerText = upgradeText;
-
-                // 總金額顯示
-                let totalMin = base + upgradeMin;
-                let totalMax = base + upgradeMax;
-                
-                if (totalMin === 0 && totalMax === 0) {
-                    document.getElementById('totalPriceDisplay').innerText = "$0";
-                    return;
-                }
-
-                let totalText = hasVariable ? `$${totalMin} ~ $${totalMax}` : `$${totalMin}`;
-                document.getElementById('totalPriceDisplay').innerText = totalText;
-            },
-
-// 表單提交
-            handleFormSubmit(e) {
-                e.preventDefault();
-                const form = e.target;
-
-                // 1. 手動檢查必填欄位
-                if (!form.checkValidity()) {
-                    const invalidInput = form.querySelector(':invalid');
-                    if (invalidInput) {
-                        let fieldName = "必填欄位";
-
-// 方法一：精準對照表 (優先使用，保證顯示正確中文)
-                        const nameMap = {
-                            'phone': '手機號碼',
-                            'ownerName': '飼主姓名',
-                            'ownerId': '身分證字號',
-                            'email': '電子信箱',
-                            'address': '通訊地址',
-                            'emergencyName': '緊急聯絡人',
-                            'emergencyPhone': '緊急電話',
-                            'petSpecies': '寵物種類',
-                            'petName': '寵物名字',
-                            'breed': '寵物品種',
-                            'weight': '體重',
-                            'ageYear': '年齡',
-                            'gender': '性別',
-                            'ligation': '結紮狀況',
-                            'medicalHistory': '過往病史',
-                            'socialAggression': '社交狀況-對人反應', // 新增
-                            'socialInteraction': '社交狀況-對狗反應', // 新增
-                            'temperament': '攻擊性評估',
-                            'chipStatus': '晶片狀況',
-                            'paymentMethod': '支付方式',
-                            'agreement': '契約條款勾選'
+                    pets.forEach(pet => {
+                        const btn = document.createElement('button');
+                        btn.className = 'w-full text-left p-4 rounded-2xl bg-white border border-brand-primary/10 shadow-sm hover:border-brand-primary hover:shadow-md hover:bg-brand-primary/5 transition-all group relative overflow-hidden';
+                        btn.onclick = () => {
+                            this.fillFormWithData(pet); // 點擊後填入資料
+                            this.closePetSelectModal(); // 關閉彈窗
+                            toast.show(`已載入 ${pet.pet_name} 的資料`, 'success');
                         };
 
-                        if (nameMap[invalidInput.name]) {
-                            fieldName = nameMap[invalidInput.name];
-                        } else {
-                            // 方法二：如果不在表內，才嘗試抓取標題 (備用方案)
-                            // 往上找題目區塊 (.space-y-1 或 .space-y-2)
-                            const container = invalidInput.closest('.space-y-1') || invalidInput.closest('.space-y-2');
-                            if (container) {
-                                // 抓取區塊內的第一個 label (通常是題目)，並排除選項按鈕(.option-card)
-                                const label = container.querySelector('label:not(.option-card)');
-                                if (label) fieldName = label.innerText.replace('*', '').trim();
-                            } else if (invalidInput.placeholder) {
-                                fieldName = invalidInput.placeholder;
-                            }
-                        }
-                        
-                        toast.show(`請檢查「${fieldName}」是否已填寫正確`, 'error', '資料不完整');
-                        
-                        // 捲動到該欄位
-                        invalidInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                        
-                        // 針對 Radio 按鈕的特殊處理 (讓焦點回到選項上)
-                        if (invalidInput.type === 'radio') {
-                            // 嘗試讓整個選項區塊閃爍
-                            const group = invalidInput.closest('.grid') || invalidInput.closest('.flex');
-                            if(group) {
-                                group.classList.add('animate-pulse');
-                                setTimeout(() => group.classList.remove('animate-pulse'), 500);
-                            }
-                        } else {
-                            invalidInput.focus();
-                        }
-                    }
-                    return;
-                }
+                        // 將日期轉成 YYYY/MM/DD 格式
+                        const dateObj = new Date(pet.created_at);
+                        const dateStr = `${dateObj.getFullYear()}/${(dateObj.getMonth()+1).toString().padStart(2, '0')}/${dateObj.getDate().toString().padStart(2, '0')}`;
 
-                // 2. 檢查 LINE
-                if (!this.state.lineConfirmed) {
-                    toast.show('請先加入 LINE 並傳送貼圖，我們才能聯繫您喔！', 'warning', '步驟未完成');
-                    document.getElementById('view-grooming').scrollIntoView({ behavior: 'smooth' });
-                    return;
-                }
-                
-                // 3. 檢查打結方案
-                const mattingCheckbox = document.querySelector('input[name="mattingSuspected"]');
-                if (mattingCheckbox && mattingCheckbox.checked) {
-                    const mattingChoice = document.querySelector('input[name="mattingChoice"]:checked');
-                    if (!mattingChoice) {
-                        toast.show('您勾選了「疑似有打結」，請往下滑選擇一種處理方案。', 'warning');
-                        document.getElementById('matting-details').scrollIntoView({ behavior: 'smooth', block: 'center' });
-                        return;
-                    }
-                }
-
-// 4. 高風險檢查
-                const riskBanner = document.getElementById('risk-warning-banner');
-                
-                // 如果是高風險模式 (紅色 Banner 顯示中)
-                if (!riskBanner.classList.contains('hidden')) {
-                    const riskInput = document.getElementById('risk-checkbox');
-                    if (!riskInput.checked) {
-                        toast.show('請勾選「同意承擔高風險服務責任」才能繼續', 'error');
-                        
-                        // 視覺提示
-                        const container = document.getElementById('risk-checkbox-container');
-                        container.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                        container.classList.add('animate-pulse');
-                        setTimeout(() => container.classList.remove('animate-pulse'), 500);
-                        return;
-                    }
-                }
-
-                // 5. 檢查簽名
-                if(document.getElementById('signatureData').value === '') {
-                    toast.show('請點擊簽名板進行簽署', 'error');
-                    document.getElementById('signature-trigger').scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    return;
-                }
-
-                // 全部通過
-                toast.show('預約資料已成功送出！期待見到毛孩！', 'success');
-                setTimeout(() => {
-                    form.reset();
-                    this.switchView('home');
-                    this.state.lineConfirmed = false;
-                    document.getElementById('sig-image').src = '';
-                    document.getElementById('signature-result').classList.add('hidden');
-                    document.getElementById('signature-trigger').classList.remove('hidden');
-                    this.toggleLineCheck();
-                }, 1500);
-            },
-
-            // 簽名板功能
-            signaturePad: {
-                canvas: null,
-                ctx: null,
-                isDrawing: false,
-                lastX: 0,
-                lastY: 0,
-                
-                init() {
-                    const modal = document.getElementById('signature-modal');
-                    const container = document.getElementById('canvas-container');
-                    
-                    // 設置畫布尺寸
-                    const resizeCanvas = () => {
-                        if (modal.classList.contains('hidden')) return;
-                        this.canvas = document.getElementById('sig-canvas');
-                        this.ctx = this.canvas.getContext('2d');
-                        this.canvas.width = container.clientWidth;
-                        this.canvas.height = container.clientHeight;
-                        
-                        // 設置筆觸
-                        this.ctx.lineWidth = 3;
-                        this.ctx.lineCap = 'round';
-                        this.ctx.lineJoin = 'round';
-                        this.ctx.strokeStyle = '#594A42'; // brand-text color
-                    };
-                    
-                    // 監聽窗口大小變化
-                    window.addEventListener('resize', resizeCanvas);
-                    
-                    // 綁定事件
-                    this.bindEvents();
-                },
-                
-                bindEvents() {
-                    // 鼠標事件
-                    document.getElementById('sig-canvas').addEventListener('mousedown', (e) => {
-                        this.isDrawing = true;
-                        const rect = this.canvas.getBoundingClientRect();
-                        this.lastX = e.clientX - rect.left;
-                        this.lastY = e.clientY - rect.top;
+                        btn.innerHTML = `
+                            <div class="flex items-center justify-between relative z-10">
+                                <div>
+                                    <span class="block text-lg font-bold text-brand-text group-hover:text-brand-primary transition-colors">${pet.pet_name}</span>
+                                    <span class="text-xs text-brand-light">上次服務：${dateStr}</span>
+                                </div>
+                                <div class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center group-hover:bg-brand-primary group-hover:text-white transition-colors">
+                                    <i data-lucide="arrow-down-to-line" class="w-4 h-4"></i>
+                                </div>
+                            </div>
+                        `;
+                        container.appendChild(btn);
                     });
-                    
-                    document.getElementById('sig-canvas').addEventListener('mousemove', (e) => {
-                        if (!this.isDrawing) return;
-                        const rect = this.canvas.getBoundingClientRect();
-                        const x = e.clientX - rect.left;
-                        const y = e.clientY - rect.top;
-                        this.draw(x, y);
-                    });
-                    
-                    document.getElementById('sig-canvas').addEventListener('mouseup', () => this.isDrawing = false);
-                    document.getElementById('sig-canvas').addEventListener('mouseout', () => this.isDrawing = false);
-                    
-                    // 觸控事件
-                    document.getElementById('sig-canvas').addEventListener('touchstart', (e) => {
-                        e.preventDefault();
-                        this.isDrawing = true;
-                        const rect = this.canvas.getBoundingClientRect();
-                        const touch = e.touches[0];
-                        this.lastX = touch.clientX - rect.left;
-                        this.lastY = touch.clientY - rect.top;
-                    }, { passive: false });
-                    
-                    document.getElementById('sig-canvas').addEventListener('touchmove', (e) => {
-                        e.preventDefault();
-                        if (!this.isDrawing) return;
-                        const rect = this.canvas.getBoundingClientRect();
-                        const touch = e.touches[0];
-                        const x = touch.clientX - rect.left;
-                        const y = touch.clientY - rect.top;
-                        this.draw(x, y);
-                    }, { passive: false });
-                    
-                    document.getElementById('sig-canvas').addEventListener('touchend', () => this.isDrawing = false);
-                },
-                
-                draw(x, y) {
-                    this.ctx.beginPath();
-                    this.ctx.moveTo(this.lastX, this.lastY);
-                    this.ctx.lineTo(x, y);
-                    this.ctx.stroke();
-                    this.lastX = x;
-                    this.lastY = y;
-                },
-                
-                open() {
-                    const modal = document.getElementById('signature-modal');
+
+                    // 顯示彈窗
                     modal.classList.remove('hidden');
-                    modal.classList.add('flex');
-                    document.body.style.overflow = 'hidden'; // 禁止背景捲動
-                    
-                    // 初始化 Canvas
-                    setTimeout(() => {
-                        const container = document.getElementById('canvas-container');
-                        this.canvas = document.getElementById('sig-canvas');
-                        this.ctx = this.canvas.getContext('2d');
-                        
-                        // 設定畫布尺寸為實際顯示尺寸
-                        this.canvas.width = container.clientWidth;
-                        this.canvas.height = container.clientHeight;
-                        
-                        // 筆觸設定
-                        this.ctx.lineWidth = 3;
-                        this.ctx.lineCap = 'round';
-                        this.ctx.lineJoin = 'round';
-                        this.ctx.strokeStyle = '#594A42'; // brand-text color
-                    }, 100);
-                },
-                
-                close() {
-                    const modal = document.getElementById('signature-modal');
-                    modal.classList.add('hidden');
-                    modal.classList.remove('flex');
-                    document.body.style.overflow = '';
-                },
-                
-                clear() {
-                    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-                },
-                
-                save() {
-                    // 簡單檢查是否有內容 (判斷像素) - 這裡簡化直接存
-                    const dataUrl = this.canvas.toDataURL('image/png');
-                    
-                    // 更新 UI
-                    document.getElementById('signature-trigger').classList.add('hidden');
-                    document.getElementById('signature-result').classList.remove('hidden');
-                    document.getElementById('sig-image').src = dataUrl;
-                    document.getElementById('signatureData').value = dataUrl; // 存入隱藏欄位供表單送出
-                    
-                    // 設定時間
-                    const now = new Date();
-                    const timeStr = now.getFullYear() + '/' + 
-                                   (now.getMonth()+1).toString().padStart(2, '0') + '/' + 
-                                   now.getDate().toString().padStart(2, '0') + ' ' + 
-                                   now.getHours().toString().padStart(2, '0') + ':' + 
-                                   now.getMinutes().toString().padStart(2, '0') + ':' + 
-                                   now.getSeconds().toString().padStart(2, '0');
-                    document.getElementById('sig-timestamp').innerText = timeStr;
-
-                    this.close();
-                    
-                    // 重新初始化圖示 (因為 trash icon 是新顯示的)
+                    document.body.style.overflow = 'hidden'; // 鎖定背景捲動
                     lucide.createIcons();
+
+                    // 動畫
+                    setTimeout(() => {
+                        modal.classList.remove('opacity-0');
+                        content.classList.remove('scale-95');
+                        content.classList.add('scale-100');
+                    }, 10);
                 },
-                
-// 清除畫布 (在 Modal 裡面的清除)
-                clear() {
-                    if (this.ctx && this.canvas) {
-                        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+                // 輔助函數：關閉寵物選擇彈窗
+                closePetSelectModal: function() {
+                    const modal = document.getElementById('petSelectModal');
+                    const content = document.getElementById('petSelectContent');
+                    
+                    modal.classList.add('opacity-0');
+                    content.classList.remove('scale-100');
+                    content.classList.add('scale-95');
+                    
+                    document.body.style.overflow = ''; // 解除鎖定
+                    
+                    setTimeout(() => {
+                        modal.classList.add('hidden');
+                    }, 300);
+                },
+
+                // 輔助函數：設定 Radio 按鈕的值
+                setRadioValue: function(name, value) {
+                    if (!value) return;
+                    const radios = document.querySelectorAll(`input[name="${name}"]`);
+                    radios.forEach(radio => {
+                        if (radio.value === value) {
+                            radio.checked = true;
+                            // 觸發點擊事件以更新 UI 樣式 (針對 option-card)
+                            radio.closest('.option-card')?.click();
+                        }
+                    });
+                },
+
+                // 輔助函數：填寫表單資料
+                fillFormWithData: function(data) {
+                    // 1. 填入飼主資料
+                    document.getElementById('ownerName').value = data.owner_name || '';
+                    document.getElementById('email').value = data.email || '';
+                    document.getElementById('ownerId').value = data.owner_id || '';
+                    document.getElementById('address').value = data.address || '';
+                    document.getElementById('emergencyName').value = data.emergency_name || '';
+                    document.getElementById('emergencyPhone').value = data.emergency_phone || '';
+                    document.getElementById('preferredClinic').value = data.preferred_clinic || '';
+
+                    // 2. 填入寵物資料
+                    document.getElementById('petName').value = data.pet_name || '';
+                    document.getElementById('breed').value = data.breed || '';
+                    document.getElementById('weight').value = data.weight || '';
+                    document.getElementById('ageYear').value = data.age || '';
+                    
+                    // 3. 處理晶片狀態
+                    const chipStatus = data.chip_status || '無晶片';
+                    const chipInput = document.getElementById('chip-input');
+                    
+                    // 找到對應的 radio 並觸發點擊
+                    const chipRadios = document.querySelectorAll('input[name="chipStatus"]');
+                    chipRadios.forEach(radio => {
+                        if (radio.value === chipStatus) {
+                            radio.checked = true;
+                            radio.closest('.option-card')?.click();
+                        }
+                    });
+
+                    if (chipStatus === '有晶片' && data.chip_id) {
+                        chipInput.value = data.chip_id;
+                    } else {
+                        chipInput.value = '';
+                    }
+                    
+                    // 4. 處理 Radio 按鈕 (性別、結紮、親人、親狗、攻擊性、病史)
+                    this.setRadioValue('petSpecies', data.pet_species);
+                    this.setRadioValue('gender', data.gender);
+                    this.setRadioValue('ligation', data.ligation);
+                    this.setRadioValue('socialAggression', data.social_aggression);
+                    this.setRadioValue('socialInteraction', data.social_interaction);
+                    this.setRadioValue('temperament', data.temperament);
+                    this.setRadioValue('medicalHistory', data.medical_history);
+                    
+                    // 5. 填入病史描述
+                    document.getElementById('medical-input').value = data.medical_detail || '';
+
+                    // 6. 觸發高風險檢查 (如果年齡符合條件)
+                    this.checkRisk(data.age);
+                                       // 假設資料庫有欄位 'line_confirmed' (布林值)，且為 true
+                    if (data.line_confirmed === true) {
+                        this.state.lineConfirmed = true;
+                        // 呼叫 toggleLineCheck 來更新按鈕的 UI 樣式 (變綠色)
+                        this.toggleLineCheck();
                     }
                 },
-                
-                // 重置整個簽名流程 (已經簽完要重簽)
-                reset() {
-                    if(confirm('確定要清除目前的簽名並重新簽署嗎？')) {
-                        toast.show('已清除，請重新簽名', 'warning');
-                        document.getElementById('signature-trigger').classList.remove('hidden');
-                        document.getElementById('signature-result').classList.add('hidden');
-                        document.getElementById('signatureData').value = '';
-                        document.getElementById('sig-image').src = '';
+
+
+                updateRadioStyle(label) {
+                    const radioName = label.querySelector('input').name;
+                    document.querySelectorAll(`input[name="${radioName}"]`).forEach(input => {
+                        const parent = input.closest('.option-card');
+                        if (parent) parent.classList.remove('selected', 'bg-white', 'border-brand-primary', 'shadow-md');
+                    });
+                    label.classList.add('selected', 'bg-white', 'border-brand-primary', 'shadow-md');
+                    label.querySelector('input').checked = true;
+                },
+
+                toggleInput(elementId, show) {
+                    const el = document.getElementById(elementId);
+                    if (show) {
+                        el.classList.remove('hidden');
+                        el.required = true;
+                        setTimeout(() => el.focus(), 100);
+                    } else {
+                        el.classList.add('hidden');
+                        el.required = false;
+                        el.value = '';
+                    }
+                },
+
+                toggleOtherInput(show) {
+                    const container = document.getElementById('other-input-container');
+                    const input = document.getElementById('otherServiceDetail');
+                    
+                    document.querySelectorAll('input[name="serviceType"]').forEach(radio => {
+                        const card = radio.closest('.option-card');
+                        if(radio.checked) {
+                            card.classList.add('selected', 'bg-white', 'border-brand-primary', 'shadow-md');
+                        } else {
+                            card.classList.remove('selected', 'bg-white', 'border-brand-primary', 'shadow-md');
+                        }
+                    });
+
+                    if (show) {
+                        container.classList.remove('hidden');
+                        input.required = true;
+                        setTimeout(() => input.focus(), 100);
+                    } else {
+                        container.classList.add('hidden');
+                        input.required = false;
+                        input.value = '';
+                    }
+                },
+
+                toggleMatting(label) {
+                    const checkbox = label.querySelector('input[type="checkbox"]');
+                    const details = document.getElementById('matting-details');
+                    const arrow = document.getElementById('matting-arrow');
+
+                    setTimeout(() => {
+                        if (checkbox.checked) {
+                            details.classList.remove('hidden');
+                            arrow.style.transform = 'rotate(180deg)';
+                            label.classList.add('selected', 'bg-white', 'border-brand-primary', 'shadow-md');
+                        } else {
+                            details.classList.add('hidden');
+                            arrow.style.transform = 'rotate(0deg)';
+                            label.classList.remove('selected', 'bg-white', 'border-brand-primary', 'shadow-md');
+                            document.querySelectorAll('input[name="mattingChoice"]').forEach(r => r.checked = false);
+                        }
+                    }, 0);
+                },
+
+                calculateTotal() {
+                    let base = parseInt(document.getElementById('basePrice').value) || 0;
+                    let upgradeMin = 0;
+                    let upgradeMax = 0;
+                    let hasVariable = false;
+                    
+                    const checkedUpgrades = document.querySelectorAll('input[name="spaUpgrades"]:checked');
+                    const upgradeRow = document.getElementById('upgrade-row');
+
+                    if (checkedUpgrades.length > 0) {
+                        upgradeRow.classList.remove('hidden');
+                    } else {
+                        upgradeRow.classList.add('hidden');
+                    }
+
+                    checkedUpgrades.forEach(cb => {
+                        let priceStr = cb.dataset.price.replace('+', '').replace(/元/g, '').trim();
+                        if (priceStr.includes('~')) {
+                            let parts = priceStr.split('~');
+                            upgradeMin += parseInt(parts[0]);
+                            upgradeMax += parseInt(parts[1]);
+                            hasVariable = true;
+                        } else {
+                            let val = parseInt(priceStr);
+                            upgradeMin += val;
+                            upgradeMax += val;
+                        }
+                    });
+
+                    let upgradeText = hasVariable ? `+$${upgradeMin} ~ $${upgradeMax}` : `+$${upgradeMin}`;
+                    document.getElementById('upgradeTotalDisplay').innerText = upgradeText;
+
+                    let totalMin = base + upgradeMin;
+                    let totalMax = base + upgradeMax;
+                    
+                    if (totalMin === 0 && totalMax === 0) {
+                        document.getElementById('totalPriceDisplay').innerText = "$0";
+                        return;
+                    }
+
+                    let totalText = hasVariable ? `$${totalMin} ~ $${totalMax}` : `$${totalMin}`;
+                    document.getElementById('totalPriceDisplay').innerText = totalText;
+                },
+
+                async handleFormSubmit(e) {
+                    e.preventDefault();
+                    const form = e.target;
+
+                    if (!form.checkValidity()) {
+                        const invalidInput = form.querySelector(':invalid');
+                        if (invalidInput) {
+                            let fieldName = "必填欄位";
+                            const nameMap = {
+                                'phone': '手機號碼',
+                                'ownerName': '飼主姓名',
+                                'ownerId': '身分證字號',
+                                'email': '電子信箱',
+                                'address': '通訊地址',
+                                'emergencyName': '緊急聯絡人',
+                                'emergencyPhone': '緊急電話',
+                                'petSpecies': '寵物種類',
+                                'petName': '寵物名字',
+                                'breed': '寵物品種',
+                                'weight': '體重',
+                                'ageYear': '年齡',
+                                'gender': '性別',
+                                'ligation': '結紮狀況',
+                                'medicalHistory': '過往病史',
+                                'socialAggression': '社交狀況-對人反應',
+                                'socialInteraction': '社交狀況-對狗反應',
+                                'temperament': '攻擊性評估',
+                                'chipStatus': '晶片狀況',
+                                'paymentMethod': '支付方式',
+                                'agreement': '契約條款勾選',
+                                'basePrice': '基礎報價',
+                                'chipId': '晶片號碼',
+                            };
+
+                            if (nameMap[invalidInput.name]) {
+                                fieldName = nameMap[invalidInput.name];
+                            } else {
+                                const container = invalidInput.closest('.space-y-1') || invalidInput.closest('.space-y-2');
+                                if (container) {
+                                    const label = container.querySelector('label:not(.option-card)');
+                                    if (label) fieldName = label.innerText.replace('*', '').trim();
+                                } else if (invalidInput.placeholder) {
+                                    fieldName = invalidInput.placeholder;
+                                }
+                            }
+                            
+                            toast.show(`請檢查「${fieldName}」是否已填寫正確`, 'error', '資料不完整');
+                            invalidInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            
+                            if (invalidInput.type === 'radio') {
+                                const group = invalidInput.closest('.grid') || invalidInput.closest('.flex');
+                                if(group) {
+                                    group.classList.add('animate-pulse');
+                                    setTimeout(() => group.classList.remove('animate-pulse'), 500);
+                                }
+                            } else {
+                                invalidInput.focus();
+                            }
+                        }
+                        return;
+                    }
+                    
+                    const phoneInput = document.getElementById('phone');
+                    const phoneRegex = /^09\d{8}$/;
+                    if (phoneInput.value && !phoneRegex.test(phoneInput.value)) {
+                        toast.show('手機號碼格式錯誤，請輸入 09 開頭的 10 碼數字', 'error');
+                        phoneInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        phoneInput.focus();
+                        return;
+                    }
+
+                    const chipStatus = document.querySelector('input[name="chipStatus"]:checked');
+                    const chipInput = document.getElementById('chip-input');
+                    if (chipStatus && chipStatus.value === '有晶片' && chipInput.value) {
+                        const chipRegex = /^\d{10}$|^\d{15}$/;
+                        if (!chipRegex.test(chipInput.value)) {
+                            toast.show('晶片號碼格式錯誤，請輸入 10 或 15 碼數字', 'error');
+                            chipInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            chipInput.focus();
+                            return;
+                        }
+                    }
+
+                    const basePriceInput = document.getElementById('basePrice');
+                    if (!basePriceInput.value || parseInt(basePriceInput.value) <= 0) {
+                        toast.show('請填寫基礎報價金額', 'error');
+                        basePriceInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        basePriceInput.focus();
+                        return;
+                    }
+
+                    if (!this.state.lineConfirmed) {
+                        toast.show('請先加入 LINE 並傳送貼圖，我們才能聯繫您喔！', 'warning', '步驟未完成');
+                        document.getElementById('view-grooming').scrollIntoView({ behavior: 'smooth' });
+                        return;
+                    }
+                    
+                    const mattingCheckbox = document.querySelector('input[name="mattingSuspected"]');
+                    if (mattingCheckbox && mattingCheckbox.checked) {
+                        const mattingChoice = document.querySelector('input[name="mattingChoice"]:checked');
+                        if (!mattingChoice) {
+                            toast.show('您勾選了「疑似有打結」，請往下滑選擇一種處理方案。', 'warning');
+                            document.getElementById('matting-details').scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            return;
+                        }
+                    }
+
+                    const riskBanner = document.getElementById('risk-warning-banner');
+                    if (!riskBanner.classList.contains('hidden')) {
+                        const riskInput = document.getElementById('risk-checkbox');
+                        if (!riskInput.checked) {
+                            toast.show('請勾選「同意承擔高風險服務責任」才能繼續', 'error');
+                            const container = document.getElementById('risk-checkbox-container');
+                            container.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            container.classList.add('animate-pulse');
+                            setTimeout(() => container.classList.remove('animate-pulse'), 500);
+                            return;
+                        }
+                    }
+
+                    if(document.getElementById('signatureData').value === '') {
+                        toast.show('請點擊簽名板進行簽署', 'error');
+                        document.getElementById('signature-trigger').scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        return;
+                    }
+
+                    toast.show('正在上傳預約資料，請稍候...', 'warning', '處理中');
+                    const submitBtn = document.querySelector('button[type="submit"]');
+                    submitBtn.disabled = true;
+                    submitBtn.innerText = '上傳中...';
+
+                    const signatureBase64 = document.getElementById('signatureData').value;
+                    let signatureUrl = '';
+
+                    try {
+                        const fetchResponse = await fetch(signatureBase64);
+                        const blob = await fetchResponse.blob();
+                        const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.png`;
+
+                        const { data: uploadData, error: uploadError } = await window.supabaseClient.storage
+                            .from('signatures')
+                            .upload(fileName, blob, {
+                                cacheControl: '3600',
+                                upsert: false
+                            });
+
+                        if (uploadError) {
+                            throw uploadError;
+                        }
+
+                        const { data: urlData } = window.supabaseClient.storage
+                            .from('signatures')
+                            .getPublicUrl(fileName);
+                        
+                        signatureUrl = urlData.publicUrl;
+
+                    } catch (error) {
+                        console.error('簽名上傳失敗:', error);
+                        toast.show('簽名上傳失敗，請稍後再試', 'error');
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = '<i data-lucide="send" class="w-4 h-4"></i> 確認送出預約';
+                        lucide.createIcons();
+                        return;
+                    }
+
+                    const formData = {
+                        line_confirmed: this.state.lineConfirmed,
+                        // --- 飼主基本資料 ---
+                        owner_name: document.getElementById('ownerName').value,
+                        owner_phone: document.getElementById('phone').value,
+                        owner_id: document.getElementById('ownerId').value,
+                        email: document.getElementById('email').value,
+                        address: document.getElementById('address').value,
+                        
+                        // --- 緊急聯絡人 ---
+                        emergency_name: document.getElementById('emergencyName').value,
+                        emergency_phone: document.getElementById('emergencyPhone').value,
+                        
+                        // --- 預約偏好 ---
+                        preferred_clinic: document.getElementById('preferredClinic').value,
+                        
+                        // --- 寵物基本資料 ---
+                        pet_name: document.getElementById('petName').value,
+                        pet_species: document.querySelector('input[name="petSpecies"]:checked').value,
+                        breed: document.getElementById('breed').value,
+                        weight: parseFloat(document.getElementById('weight').value),
+                        age: parseInt(document.getElementById('ageYear').value),
+                        gender: document.querySelector('input[name="gender"]:checked').value,
+                        ligation: document.querySelector('input[name="ligation"]:checked').value,
+                        
+                        // --- 健康與行為 ---
+                        medical_history: document.querySelector('input[name="medicalHistory"]:checked').value,
+                        medical_detail: document.getElementById('medical-input').value, // 備註細節
+                        
+                        social_aggression: document.querySelector('input[name="socialAggression"]:checked').value,
+                        social_interaction: document.querySelector('input[name="socialInteraction"]:checked').value,
+                        temperament: document.querySelector('input[name="temperament"]:checked').value,
+                        
+                        // --- 晶片資訊 ---
+                        chip_status: document.querySelector('input[name="chipStatus"]:checked').value,
+                        chip_id: document.getElementById('chip-input').value,
+                        
+                       // --- 服務與金額 (修改區) ---
+                        service_type: document.querySelector('input[name="serviceType"]:checked').value,
+                        base_price: parseInt(document.getElementById('basePrice').value), // 基礎報價
+                        
+                        // --- 修改：升級加價 (直接紀錄區間字串) ---
+                        upgrade_price: (() => {
+                            let prices = [];
+                            document.querySelectorAll('input[name="spaUpgrades"]:checked').forEach(cb => {
+                                // 取出原始價格字串 (例如 "+399" 或 "+399~599")
+                                let priceStr = cb.dataset.price; 
+                                // 移除前綴的 "+" 號
+                                prices.push(priceStr.replace('+', ''));
+                            });
+                            // 將所有價格用逗號串接 (例如 "399, 399~599, 50")
+                            return prices.join(', ');
+                        })(), 
+                        
+                        // --- 修改：預估總金額 (直接紀錄區間字串) ---
+                        total_price: (() => {
+                            const base = parseInt(document.getElementById('basePrice').value) || 0;
+                            let ranges = [];
+                            
+                            document.querySelectorAll('input[name="spaUpgrades"]:checked').forEach(cb => {
+                                let priceStr = cb.dataset.price.replace('+', '').trim();
+                                // 如果有區間，直接加入陣列
+                                if (priceStr.includes('~')) {
+                                    ranges.push(priceStr);
+                                } else {
+                                    // 如果是固定價，轉成數字
+                                    let val = parseInt(priceStr);
+                                    if (!isNaN(val)) ranges.push(val);
+                                }
+                            });
+                            // 計算最小總額與最大總額
+                            let minTotal = base;
+                            let maxTotal = base;
+                            
+                            ranges.forEach(r => {
+                                if (typeof r === 'string') {
+                                    // 處理區間字串 "399~599"
+                                    let parts = r.split('~').map(p => parseInt(p));
+                                    if (!isNaN(parts[0])) minTotal += parts[0];
+                                    if (!isNaN(parts[1])) maxTotal += parts[1];
+                                } else {
+                                    // 處理固定數字
+                                    minTotal += r;
+                                    maxTotal += r;
+                                }
+                            });
+                            // 如果最小最大相等，回傳單一數字，否則回傳區間字串
+                            return minTotal === maxTotal ? minTotal : `${minTotal}~${maxTotal}`;
+                        })(),
+                        
+                        // --- 金額計算結束 ---
+                        payment_method: document.querySelector('input[name="paymentMethod"]:checked').value,
+                                                
+                        // --- 升級項目清單 (文字記錄) ---
+                        spa_upgrades: Array.from(document.querySelectorAll('input[name="spaUpgrades"]:checked')).map(cb => cb.value).join(', '),
+                        
+                        // --- 打結處理 ---
+                        matting_suspected: mattingCheckbox ? mattingCheckbox.checked : false,
+                        matting_choice: mattingCheckbox && mattingCheckbox.checked ? (document.querySelector('input[name="mattingChoice"]:checked')?.value || '') : '',
+                        
+                        // --- 簽名與狀態 ---
+                        signature_data: signatureUrl,
+                        status: 'pending'
+                    };
+
+                    const spaCheckboxes = document.querySelectorAll('input[name="spaUpgrades"]:checked');
+                    const spaList = Array.from(spaCheckboxes).map(cb => cb.value);
+                    formData.spa_upgrades = spaList.join(', ');
+
+                    formData.matting_suspected = mattingCheckbox ? mattingCheckbox.checked : false;
+                    if (formData.matting_suspected) {
+                        const mattingChoice = document.querySelector('input[name="mattingChoice"]:checked');
+                        formData.matting_choice = mattingChoice ? mattingChoice.value : '';
+                    }
+
+                    const { data, error } = await window.supabaseClient
+                        .from('bookings')
+                        .insert([formData])
+                        .select();
+
+                    if (error) {
+                        console.error('Supabase Error:', error);
+                        toast.show('上傳失敗，請稍後再試或聯繫店家', 'error');
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = '<i data-lucide="send" class="w-4 h-4"></i> 確認送出預約';
+                        lucide.createIcons();
+                    } else {
+                        toast.show('預約資料已成功送出！期待見到毛孩！', 'success');
+                        setTimeout(() => {
+                            form.reset();
+                            this.switchView('home');
+                            this.state.lineConfirmed = false;
+                            document.getElementById('sig-image').src = '';
+                            document.getElementById('signature-result').classList.add('hidden');
+                            document.getElementById('signature-trigger').classList.remove('hidden');
+                            this.toggleLineCheck();
+                            submitBtn.disabled = false;
+                            submitBtn.innerHTML = '<i data-lucide="send" class="w-4 h-4"></i> 確認送出預約';
+                            lucide.createIcons();
+                        }, 1500);
+                    }
+                },
+
+                signaturePad: {
+                    canvas: null,
+                    ctx: null,
+                    isDrawing: false,
+                    lastX: 0,
+                    lastY: 0,
+                    
+                    init() {
+                        const modal = document.getElementById('signature-modal');
+                        const container = document.getElementById('canvas-container');
+                        
+                        const resizeCanvas = () => {
+                            if (modal.classList.contains('hidden')) return;
+                            this.canvas = document.getElementById('sig-canvas');
+                            this.ctx = this.canvas.getContext('2d');
+                            const headerHeight = document.querySelector('#signature-modal > div:first-child').offsetHeight || 60;
+                            const footerHeight = document.querySelector('#signature-modal > div:last-child').offsetHeight || 80;
+                            this.canvas.width = container.clientWidth;
+                            this.canvas.height = container.clientHeight - 20;
+                            
+                            this.ctx.lineWidth = 3;
+                            this.ctx.lineCap = 'round';
+                            this.ctx.lineJoin = 'round';
+                            this.ctx.strokeStyle = '#594A42';
+                        };
+                        
+                        window.addEventListener('resize', resizeCanvas);
+                        this.bindEvents();
+                    },
+                    
+                    bindEvents() {
+                        document.getElementById('sig-canvas').addEventListener('mousedown', (e) => {
+                            this.isDrawing = true;
+                            const rect = this.canvas.getBoundingClientRect();
+                            this.lastX = e.clientX - rect.left;
+                            this.lastY = e.clientY - rect.top;
+                        });
+                        
+                        document.getElementById('sig-canvas').addEventListener('mousemove', (e) => {
+                            if (!this.isDrawing) return;
+                            const rect = this.canvas.getBoundingClientRect();
+                            const x = e.clientX - rect.left;
+                            const y = e.clientY - rect.top;
+                            this.draw(x, y);
+                        });
+                        
+                        document.getElementById('sig-canvas').addEventListener('mouseup', () => this.isDrawing = false);
+                        document.getElementById('sig-canvas').addEventListener('mouseout', () => this.isDrawing = false);
+                        
+                        document.getElementById('sig-canvas').addEventListener('touchstart', (e) => {
+                            e.preventDefault();
+                            this.isDrawing = true;
+                            const rect = this.canvas.getBoundingClientRect();
+                            const touch = e.touches[0];
+                            this.lastX = touch.clientX - rect.left;
+                            this.lastY = touch.clientY - rect.top;
+                        }, { passive: false });
+                        
+                        document.getElementById('sig-canvas').addEventListener('touchmove', (e) => {
+                            e.preventDefault();
+                            if (!this.isDrawing) return;
+                            const rect = this.canvas.getBoundingClientRect();
+                            const touch = e.touches[0];
+                            const x = touch.clientX - rect.left;
+                            const y = touch.clientY - rect.top;
+                            this.draw(x, y);
+                        }, { passive: false });
+                        
+                        document.getElementById('sig-canvas').addEventListener('touchend', () => this.isDrawing = false);
+                    },
+                    
+                    draw(x, y) {
+                        this.ctx.beginPath();
+                        this.ctx.moveTo(this.lastX, this.lastY);
+                        this.ctx.lineTo(x, y);
+                        this.ctx.stroke();
+                        this.lastX = x;
+                        this.lastY = y;
+                    },
+                    
+                    open() {
+                        const modal = document.getElementById('signature-modal');
+                        modal.classList.remove('hidden');
+                        modal.classList.add('flex');
+                        document.body.style.overflow = 'hidden';
+                        
+                        setTimeout(() => {
+                            const container = document.getElementById('canvas-container');
+                            this.canvas = document.getElementById('sig-canvas');
+                            this.ctx = this.canvas.getContext('2d');
+                            
+                            this.canvas.width = container.clientWidth;
+                            this.canvas.height = container.clientHeight;
+                            
+                            this.ctx.lineWidth = 3;
+                            this.ctx.lineCap = 'round';
+                            this.ctx.lineJoin = 'round';
+                            this.ctx.strokeStyle = '#594A42';
+                        }, 100);
+                    },
+                    
+                    close() {
+                        const modal = document.getElementById('signature-modal');
+                        modal.classList.add('hidden');
+                        modal.classList.remove('flex');
+                        document.body.style.overflow = '';
+                    },
+                    
+                    clear() {
+                        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                    },
+                    
+                    save() {
+                        const dataUrl = this.canvas.toDataURL('image/png');
+                        
+                        document.getElementById('signature-trigger').classList.add('hidden');
+                        document.getElementById('signature-result').classList.remove('hidden');
+                        document.getElementById('sig-image').src = dataUrl;
+                        document.getElementById('signatureData').value = dataUrl;
+                        
+                        const now = new Date();
+                        const timeStr = now.getFullYear() + '/' + 
+                                       (now.getMonth()+1).toString().padStart(2, '0') + '/' + 
+                                       now.getDate().toString().padStart(2, '0') + ' ' + 
+                                       now.getHours().toString().padStart(2, '0') + ':' + 
+                                       now.getMinutes().toString().padStart(2, '0') + ':' + 
+                                       now.getSeconds().toString().padStart(2, '0');
+                        document.getElementById('sig-timestamp').innerText = timeStr;
+
+                        this.close();
+                        
+                        lucide.createIcons();
+                    },
+                    
+                    clear() {
+                        if (this.ctx && this.canvas) {
+                            this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                        }
+                    },
+                    
+                    reset() {
+                        if(confirm('確定要清除目前的簽名並重新簽署嗎？')) {
+                            toast.show('已清除，請重新簽名', 'warning');
+                            document.getElementById('signature-trigger').classList.remove('hidden');
+                            document.getElementById('signature-result').classList.add('hidden');
+                            document.getElementById('signatureData').value = '';
+                            document.getElementById('sig-image').src = '';
+                        }
                     }
                 }
-            }
-        };
+            });
 
-        // 啟動應用程式
-        window.addEventListener('load', () => app.init());
+            // --- 3. 啟動應用程式 ---
+            
+            app.init();
+        });
+        
     </script>
-<div id="terms-modal" class="fixed inset-0 z-[60] bg-white hidden flex-col animate-fade-in">
+    <div id="terms-modal" class="fixed inset-0 z-[60] bg-white hidden flex-col animate-fade-in">
         <div class="bg-white/90 backdrop-blur-md px-5 py-4 flex justify-between items-center shadow-sm shrink-0 border-b border-brand-primary/10 relative z-10">
             <h3 id="modal-title" class="font-bold text-lg text-brand-text">服務契約條款</h3>
             <button type="button" onclick="app.toggleTermsModal(false)" class="p-2 bg-gray-100 rounded-full text-brand-light hover:bg-gray-200 transition-colors">
@@ -1768,6 +2105,35 @@ autoFillDemo() {
         <div class="p-4 bg-white border-t border-brand-primary/10 shrink-0">
             <button type="button" onclick="app.toggleTermsModal(false)" class="w-full py-3.5 rounded-xl bg-brand-text text-white font-bold shadow-lg active:scale-95 transition-transform flex items-center justify-center gap-2">
                 <i data-lucide="check" class="w-4 h-4"></i> 我已閱讀完畢
+            </button>
+        </div>
+    </div>
+        <!-- 寵物選擇彈窗 (新增) -->
+    <div id="petSelectModal" class="fixed inset-0 z-[9999] hidden bg-black/20 backdrop-blur-[2px] flex items-center justify-center opacity-0 transition-opacity duration-300">
+        <div class="bg-[#F9F4F0] w-[90%] max-w-sm rounded-[32px] p-6 shadow-2xl transform scale-95 transition-transform duration-300 border border-white/50" id="petSelectContent">
+            
+            <div class="text-center mb-6">
+                <div class="w-16 h-16 bg-brand-primary/10 rounded-full flex items-center justify-center mx-auto mb-4 animate-bounce-slight">
+                    <i data-lucide="party-popper" class="w-8 h-8 text-brand-primary"></i>
+                </div>
+                <h3 class="text-xl font-bold text-brand-text font-serif tracking-widest mb-1">歡迎回來！</h3>
+                <p class="text-xs text-brand-light tracking-wider">找到歷史紀錄，請確認要帶入的資料：</p>
+            </div>
+
+            <!-- 寵物列表容器 -->
+            <div id="petListContainer" class="space-y-3 max-h-[50vh] overflow-y-auto custom-scrollbar pr-1 mb-4">
+                <!-- JS 會自動產生內容放在這裡 -->
+            </div>
+
+            <div class="relative flex py-2 items-center">
+                <div class="flex-grow border-t border-gray-200"></div>
+                <span class="flex-shrink-0 mx-3 text-gray-300 text-xs">OR</span>
+                <div class="flex-grow border-t border-gray-200"></div>
+            </div>
+
+            <button onclick="app.closePetSelectModal()" class="w-full py-3 rounded-xl border border-gray-300 text-gray-500 font-bold text-sm hover:bg-gray-50 transition flex items-center justify-center gap-2">
+                <i data-lucide="pen-line" class="w-4 h-4"></i>
+                不使用舊資料，填寫新表單
             </button>
         </div>
     </div>
