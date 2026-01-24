@@ -145,13 +145,21 @@
             scrollbar-width: none;
         }
 
-        /* 頁面切換控制 */
-        .view-section {
-            display: none; /* 預設隱藏所有區塊 */
-        }
-        .view-section.active {
-            display: block; /* 只有 active 的顯示 */
-        }
+/* 頁面切換控制 */
+.view-section {
+    display: none; /* 預設隱藏所有區塊 */
+    animation: fadeIn 0.4s ease-in-out;
+}
+.view-section.active {
+    display: block; /* 只有 active 的顯示 */
+}
+
+/* 新增一個簡單的淡入動畫 */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
         
 /* 簽名板樣式 */
 .signature-pad {
@@ -266,10 +274,9 @@
         
         <div id="view-home" class="view-section active animate-fade-in space-y-8">
             <div class="text-center space-y-4">
-    <div class="w-28 h-28 mx-auto mb-2 rounded-full p-1 border border-brand-primary/20 overflow-hidden cursor-pointer" onclick="app.checkAdminAccess()">
-        <img src="logo.jpg" onerror="this.src='https://placehold.co/200x200?text=Logo'" alt="Logo" class="w-full h-full object-cover rounded-full">
-    </div>
-                </div>
+<div class="w-28 h-28 mx-auto mb-2 rounded-full p-1 border border-brand-primary/20 overflow-hidden cursor-pointer" onclick="app.checkAdminAccess()">
+    <img src="logo.jpg" onerror="this.src='https://placehold.co/200x200?text=Logo'" alt="Logo" class="w-full h-full object-cover rounded-full">
+</div>
                 <h1 class="text-2xl font-bold font-serif text-brand-primary italic">毛小孩的笑容是最甜蜜的糖果</h1>
                 <div class="flex flex-wrap justify-center gap-2 px-4">
                     <span class="text-[10px] text-brand-light bg-brand-primary/10 px-2 py-0.5 rounded-full tracking-wider">#台北市松山區</span>
@@ -1276,6 +1283,7 @@
                         document.body.style.overflow = '';
                     }
                 },
+// --- 後台管理員登入檢查 (點擊 Logo 兩次) ---
 checkAdminAccess: function() {
     let clickCount = parseInt(sessionStorage.getItem('logoClickCount') || '0');
     
@@ -1283,10 +1291,10 @@ checkAdminAccess: function() {
     sessionStorage.setItem('logoClickCount', clickCount);
 
     if (clickCount >= 2) {
-        sessionStorage.setItem('logoClickCount', '0');
+        sessionStorage.setItem('logoClickCount', '0'); // 重置計數
         setTimeout(() => {
-            window.location.href = 'admin.html';
-        }, 500);
+            window.location.href = 'admin.html'; // 跳轉到後台
+        }, 300);
     }
 },
 
@@ -2051,10 +2059,8 @@ checkAdminAccess: function() {
             });
 
             // --- 3. 啟動應用程式 ---
-            
             app.init();
         });
-        
     </script>
     <div id="terms-modal" class="fixed inset-0 z-[60] bg-white hidden flex-col animate-fade-in">
         <div class="bg-white/90 backdrop-blur-md px-5 py-4 flex justify-between items-center shadow-sm shrink-0 border-b border-brand-primary/10 relative z-10">
