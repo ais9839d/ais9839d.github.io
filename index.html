@@ -910,7 +910,26 @@
                                 <span class="text-xs font-bold text-brand-text">本人已詳閱並同意以上契約內容</span>
                             </label>
                         </div>
-
+<div class="bg-brand-bg/50 p-5 rounded-2xl border border-brand-primary/20 space-y-3">
+                        <h4 class="text-sm font-bold text-brand-dark flex items-center gap-2 border-b border-brand-primary/10 pb-2 mb-1">
+                            <i data-lucide="info" class="w-4 h-4 text-brand-primary"></i> 乙方業者資訊
+                        </h4>
+                        <div class="space-y-2 text-xs leading-relaxed text-brand-light">
+                            <p><strong class="text-brand-text">店家名稱：</strong>麥克諾尼寵物沙龍</p>
+                            <p><strong class="text-brand-text">聯絡電話：</strong>02-27129404</p>
+                            <p><strong class="text-brand-text">店家地址：</strong>台北市松山區敦化北路222巷20號</p>
+                            <p><strong class="text-brand-text">營業時間：</strong>9:00-18:00 (每週三、週日公休)</p>
+                            
+                            <div class="mt-3 pt-3 border-t border-brand-primary/10">
+                                <p class="font-bold text-brand-text mb-1 flex items-center gap-1">
+                                    <i data-lucide="ambulance" class="w-3 h-3"></i> 特約緊急送醫場所：
+                                </p>
+                                <p class="pl-4">上群動物醫院</p>
+                                <p class="pl-4 text-[10px]">地址：台北市中山區南京東路三段215號</p>
+                                <p class="pl-4 text-[10px]">電話：(02)2775-3007、(02)2751-4182</p>
+                            </div>
+                        </div>
+                    </div>
                         <div class="space-y-1 pt-2">
                             <label class="text-xs font-bold text-brand-dark flex items-center gap-1 ml-1">
                                 <i data-lucide="pen-tool" class="w-3 h-3"></i> 數位簽名 *
@@ -977,7 +996,7 @@
         // PWA 自動更新腳本 (sw.js)
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('sw.js?v=1').then(reg => {
+                navigator.serviceWorker.register('sw.js?v=2').then(reg => {
                     reg.onupdatefound = () => {
                         const installingWorker = reg.installing;
                         installingWorker.onstatechange = () => {
@@ -2182,18 +2201,33 @@ checkAdminAccess: function() {
 
                                 ${isHighRisk ? `<div style="${style.warningBox}">${riskTerms}</div>` : ''}
 
-                                <div style="margin-top: 25px;">
+<div style="margin-top: 25px;">
                                     <h3 style="font-size: 14px; border-bottom: 2px solid #eee; padding-bottom: 5px; color:#888;">美容服務契約條款全文</h3>
                                     ${generalTerms}
                                 </div>
-
+                                <div style="${style.sectionBox} margin-top: 20px; border-style: dashed; border-color: #cbd5e1; background-color: #f8fafc;">
+                                    <div style="${style.sectionTitle} background-color: #eee; color: #333;">▍ 業者基本資料 (乙方)</div>
+                                    <table style="${style.table}">
+                                        <tr><td style="${style.tdLabel}">店家名稱</td><td style="${style.tdValue}">麥克諾尼寵物沙龍</td></tr>
+                                        <tr><td style="${style.tdLabel}">聯絡電話</td><td style="${style.tdValue}">02-27129404</td></tr>
+                                        <tr><td style="${style.tdLabel}">店家地址</td><td style="${style.tdValue}">台北市松山區敦化北路222巷20號</td></tr>
+                                        <tr><td style="${style.tdLabel}">營業時間</td><td style="${style.tdValue}">9:00-18:00 (每週三、週日公休)</td></tr>
+                                        <tr>
+                                            <td style="${style.tdLabel}">特約醫院</td>
+                                            <td style="${style.tdValue}">
+                                                上群動物醫院<br>
+                                                <span style="font-size:11px; color:#666;">(02)2775-3007 / 台北市中山區南京東路三段215號</span>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
                                 <div style="margin-top: 30px; padding-top: 20px; border-top: 2px dashed #ccc; text-align: center;">
                                     <p style="font-weight: bold; margin-bottom: 10px;">立契約書人 (飼主) 簽署</p>
                                     <div style="display:inline-block; border:1px solid #eee; padding:10px; border-radius:10px;">
                                         <img src="${data.signature_data}" style="max-height: 100px; max-width: 100%; display: block;" alt="飼主簽名" />
                                     </div>
                                     <p style="font-size: 11px; color: #999; margin-top: 5px;">
-                                        IP: (由系統自動紀錄) / Time: ${now}
+                                        (由系統自動紀錄) / Time: ${now}
                                     </p>
                                     <p style="font-size: 11px; color: #999; margin-top: 20px;">
                                         本契約副本已由系統自動留存，並具備法律效力。
