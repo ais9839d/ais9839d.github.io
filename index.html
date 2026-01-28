@@ -1001,7 +1001,7 @@
         // PWA 自動更新腳本 (sw.js)
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('sw.js?v=4').then(reg => {
+                navigator.serviceWorker.register('sw.js?v=5').then(reg => {
                     reg.onupdatefound = () => {
                         const installingWorker = reg.installing;
                         installingWorker.onstatechange = () => {
@@ -1134,19 +1134,28 @@
                     ]
                 },
 
-                init() {
-                    lucide.createIcons();
-                    toast.init();
-                    this.renderBanner();
-                    this.renderProducts();
-// 改為從資料庫讀取動態價目
-                    this.loadDynamicPrices();
-                    
-                    const hash = window.location.hash.replace('#', '');
-                    if(hash) this.switchView(hash);
-                    
-                    this.signaturePad.init();
-                },
+// 搜尋 init() { ... } 並替換成這個版本
+init() {
+    lucide.createIcons();
+    toast.init();
+    this.renderBanner();
+    this.renderProducts();
+    this.loadDynamicPrices();
+    
+    // 1. 處理初始載入的 Hash
+    const hash = window.location.hash.replace('#', '');
+    if(hash) this.switchView(hash, false); // false 代表不要重複推入歷史紀錄
+    
+    // 2. [新增] 監聽瀏覽器的「上一頁/下一頁」按鈕事件
+    window.addEventListener('popstate', () => {
+        const currentHash = window.location.hash.replace('#', '');
+        // 如果 Hash 變成空的，代表回到首頁
+        this.switchView(currentHash || 'home', false);
+    });
+    
+    this.signaturePad.init();
+},
+
 async loadDynamicPrices() {
                     try {
                         const { data, error } = await window.supabaseClient
@@ -1232,24 +1241,30 @@ async loadDynamicPrices() {
                 },
 
 
-                switchView(viewName) {
-                    document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
-                    const target = document.getElementById('view-' + viewName);
-                    if(target) target.classList.add('active');
-                    
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
+// 搜尋 switchView(viewName) 並替換成這個版本
+switchView(viewName, updateHistory = true) { // 多了 updateHistory 參數
+    document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+    const target = document.getElementById('view-' + viewName);
+    if(target) target.classList.add('active');
+    
+    window.scrollTo({ top: 0, behavior: 'smooth' });
 
-                    const backBtn = document.getElementById('back-btn');
-                    if (viewName === 'home') {
-                        backBtn.classList.add('hidden');
-                        history.pushState(null, null, ' ');
-                    } else {
-                        backBtn.classList.remove('hidden');
-                        window.location.hash = viewName;
-                    }
-                    
-                    this.state.currentView = viewName;
-                },
+    const backBtn = document.getElementById('back-btn');
+    if (viewName === 'home') {
+        backBtn.classList.add('hidden');
+        // 只有在主動點擊時才修改歷史紀錄
+        if (updateHistory) {
+            history.pushState(null, null, ' '); // 清除 hash
+        }
+    } else {
+        backBtn.classList.remove('hidden');
+        if (updateHistory) {
+            window.location.hash = viewName; // 設定 hash
+        }
+    }
+    
+    this.state.currentView = viewName;
+},
 
                 toggleLineCheck() {
                     this.state.lineConfirmed = !this.state.lineConfirmed;
@@ -2456,12 +2471,20 @@ this.lastContractData = contractData;
                         lucide.createIcons();
                     },
                     
-                    clear() {
-                        if (this.ctx && this.canvas) {
-                            this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-                        }
-                    },
-                    
+// 在 signaturePad 物件內，替換掉原本的 clear()
+clear() {
+    if (this.ctx && this.canvas) {
+        // [修正] 在手機上最穩定的清空方式是「重新設定寬度」
+        // 這會強制瀏覽器重繪整個 Canvas，解決殘影問題
+        this.canvas.width = this.canvas.width;
+        
+        // [重要] 重設寬度後，畫筆樣式會被重置，必須重新設定回來！
+        this.ctx.lineWidth = 3;
+        this.ctx.lineCap = 'round';
+        this.ctx.lineJoin = 'round';
+        this.ctx.strokeStyle = '#594A42';
+    }
+},                    
                     reset() {
                         if(confirm('確定要清除目前的簽名並重新簽署嗎？')) {
                             toast.show('已清除，請重新簽名', 'warning');
