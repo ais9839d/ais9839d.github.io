@@ -535,7 +535,7 @@
                         <label class="text-xs font-bold text-brand-light ml-1">社交狀況 *</label>
                         
                         <div class="space-y-1">
-                            <span class="text-[10px] text-brand-primary/80 font-bold ml-1">1. 對人/環境反應</span>
+                            <span class="text-[10px] text-brand-primary/80 font-bold ml-1">1. 對人/環境反應 *</span>
                             <div class="grid grid-cols-2 gap-2">
                                 <label class="option-card p-3 rounded-xl flex items-center justify-center text-center text-[11px] font-bold leading-tight" onclick="app.updateRadioStyle(this)">
                                     <input type="radio" name="socialAggression" value="有攻擊性" class="hidden" required> 有攻擊性
@@ -547,7 +547,7 @@
                         </div>
 
                         <div class="space-y-1">
-                            <span class="text-[10px] text-brand-primary/80 font-bold ml-1">2. 與其他狗狗互動</span>
+                            <span class="text-[10px] text-brand-primary/80 font-bold ml-1">2. 與其他狗狗互動 *</span>
                             <div class="grid grid-cols-2 gap-2">
                                 <label class="option-card p-3 rounded-xl flex items-center justify-center text-center text-[11px] font-bold leading-tight" onclick="app.updateRadioStyle(this)">
                                     <input type="radio" name="socialInteraction" value="可與狗玩" class="hidden" required> 可與狗朋友們<br>一起玩耍
@@ -997,7 +997,7 @@
         // PWA 自動更新腳本 (sw.js)
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('sw.js?v=2').then(reg => {
+                navigator.serviceWorker.register('sw.js?v=3').then(reg => {
                     reg.onupdatefound = () => {
                         const installingWorker = reg.installing;
                         installingWorker.onstatechange = () => {
