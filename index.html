@@ -253,7 +253,7 @@
     <div class="fixed rounded-full blur-[120px] -z-10 opacity-40 bg-brand-secondary top-[-15%] right-[-25%] w-[500px] h-[500px] animate-float"></div>
     <div class="fixed rounded-full blur-[100px] -z-10 opacity-50 bg-[#CDB5A8] bottom-[5%] left-[-20%] w-[400px] h-[400px] animate-float" style="animation-direction: reverse;"></div>
 
-    <nav class="fixed top-0 w-full z-40 bg-brand-bg/80 backdrop-blur-md px-6 py-3 flex justify-between items-center shadow-sm">
+<nav class="fixed top-0 w-full z-40 bg-brand-bg/80 backdrop-blur-md px-6 pb-3 flex justify-between items-center shadow-sm pt-[env(safe-area-inset-top)]">
         <div class="flex items-center gap-4 cursor-pointer" onclick="app.switchView('home')">
             <img src="logo.jpg" onerror="this.src='https://placehold.co/100x100?text=Logo'" alt="Logo" class="w-12 h-12 object-cover rounded-full border border-brand-primary/30">
             <div class="flex items-center">
@@ -270,7 +270,7 @@
         </button>
     </nav>
 
-    <main class="pt-24 px-5 max-w-lg mx-auto space-y-8">
+<main class="pt-[calc(6rem+env(safe-area-inset-top))] px-5 max-w-lg mx-auto space-y-8">
         
         <div id="view-home" class="view-section active animate-fade-in space-y-8">
             <div class="text-center space-y-4">
@@ -977,7 +977,7 @@
         // PWA 自動更新腳本 (sw.js)
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('sw.js').then(reg => {
+                navigator.serviceWorker.register('sw.js?v=1').then(reg => {
                     reg.onupdatefound = () => {
                         const installingWorker = reg.installing;
                         installingWorker.onstatechange = () => {
