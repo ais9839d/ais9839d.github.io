@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>麥克諾尼 | 後台管理系統</title>
+    <link rel="manifest" href="manifest-admin.json">
     
     <!-- Favicon -->
     <link rel="icon" href="logo.jpg" type="image/jpeg">
@@ -356,6 +357,22 @@
     </div>
 </div>
 <script>
+    // PWA 自動更新與註冊腳本 (sw-admin.js)
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('sw-admin.js').then(reg => {
+                reg.onupdatefound = () => {
+                    const installingWorker = reg.installing;
+                    installingWorker.onstatechange = () => {
+                        if (installingWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                            // 當發現有新版本時，自動重新載入頁面
+                            window.location.reload();
+                        }
+                    };
+                };
+            }).catch(err => console.error('PWA 註冊失敗:', err));
+        });
+    }
     // 初始化
     lucide.createIcons();
 
@@ -1246,5 +1263,6 @@ async function handleChangePassword() {
 }
 
 </script>
+
 </body>
 </html>
