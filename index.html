@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#F9F4F0">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>麥克諾尼 | 日式寵物沙龍</title>
 <meta name="description" content="日式寵物美容、洗護專門店">
@@ -189,7 +190,7 @@
             top: calc(20px + env(safe-area-inset-top));
             right: 0;
             left: 0;
-            z-index: 9999;
+            z-index: 10000;
             display: flex;
             flex-direction: column;
             align-items: center; /* 居中顯示 */
@@ -294,16 +295,22 @@
                 </p>
             </div>
 
-            <div class="overflow-hidden relative w-full h-32 rounded-2xl cursor-pointer shadow-sm border border-white/60" onclick="app.switchView('products')">
-                <div class="absolute inset-0 z-20 flex flex-col justify-center items-center text-white bg-black/25 backdrop-blur-[1px]">
-                    <h3 class="font-bold text-lg tracking-widest drop-shadow-md">嚴選日系洗護</h3>
-                    <p class="text-[10px] opacity-90 uppercase">Premium Japanese Spa Showcase</p>
-                </div>
-                <div class="flex w-[400%] h-full animate-scroll">
-                    <div class="flex w-full h-full" id="banner-container"></div>
-                </div>
-            </div>
+<div 
+    class="relative w-full h-32 rounded-2xl cursor-pointer shadow-sm border border-white/60 overflow-hidden isolate transform-gpu" 
+    onclick="app.switchView('products')"
+    role="button"
+    aria-label="查看嚴選日系洗護產品"
+    style="-webkit-mask-image: -webkit-radial-gradient(white, black);"
+>
+    <div class="absolute inset-0 z-20 flex flex-col justify-center items-center text-white bg-black/25 backdrop-blur-[1px] pointer-events-none">
+        <h3 class="font-bold text-lg tracking-widest drop-shadow-md">嚴選日系洗護</h3>
+        <p class="text-[10px] opacity-90 uppercase">Premium Japanese Spa Showcase</p>
+    </div>
 
+    <div class="flex w-[400%] h-full animate-scroll will-change-transform">
+        <div class="flex w-full h-full" id="banner-container"></div>
+    </div>
+</div>
             <div class="grid grid-cols-2 gap-4">
                 <button onclick="app.switchView('grooming')" class="glass-card p-6 text-left hover:-translate-y-1 transition-all group">
                     <i data-lucide="scissors" class="w-6 h-6 mb-4 text-brand-primary"></i>
@@ -410,7 +417,7 @@
     
     <div class="space-y-1">                        <label class="text-xs font-bold text-brand-light ml-1">手機號碼 *</label>
                         <div class="flex gap-2">
-                            <input type="tel" name="phone" id="phone" class="input-style" placeholder="09xxxxxxxx" required>
+                            <input type="tel" name="phone" id="phone" class="input-style" placeholder="09xxxxxxxx" autocomplete="tel" required>
 <button type="button" onclick="app.handleSearchOldCustomer()" class="whitespace-nowrap px-4 bg-brand-primary text-white text-xs font-bold rounded-xl shadow-sm active:scale-95 transition-transform">帶入紀錄</button>
                         </div>
                         <p class="text-[12px] text-brand-light/80 pl-1 flex items-center gap-1 pt-1">
@@ -426,7 +433,14 @@
                         </div>
                         <div class="space-y-1">
                             <label class="text-xs font-bold text-brand-light ml-1">身分證字號 *</label>
-                            <input type="text" name="ownerId" id="ownerId" class="input-style" placeholder="" required>
+<input 
+    type="text" 
+    name="ownerId" 
+    id="ownerId" 
+    class="input-style" 
+    placeholder="" 
+    required 
+    oninput="this.value = this.value.toUpperCase()" >
                         </div>
                     </div>
 
@@ -447,7 +461,7 @@
                         </div>
                         <div class="space-y-1">
                             <label class="text-xs font-bold text-brand-dark ml-1">緊急電話 *</label>
-                            <input type="tel" name="emergencyPhone" id="emergencyPhone" class="input-style" placeholder="" required>
+<input type="tel" name="emergencyPhone" id="emergencyPhone" class="input-style" placeholder="" required autocomplete="tel">
                         </div>
                     </div>
 
@@ -1001,7 +1015,7 @@
         // PWA 自動更新腳本 (sw.js)
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('sw.js?v=5').then(reg => {
+                navigator.serviceWorker.register('sw.js?v=6').then(reg => {
                     reg.onupdatefound = () => {
                         const installingWorker = reg.installing;
                         installingWorker.onstatechange = () => {
@@ -2348,20 +2362,24 @@ this.lastContractData = contractData;
                         const modal = document.getElementById('signature-modal');
                         const container = document.getElementById('canvas-container');
                         
-                        const resizeCanvas = () => {
-                            if (modal.classList.contains('hidden')) return;
-                            this.canvas = document.getElementById('sig-canvas');
-                            this.ctx = this.canvas.getContext('2d');
-                            const headerHeight = document.querySelector('#signature-modal > div:first-child').offsetHeight || 60;
-                            const footerHeight = document.querySelector('#signature-modal > div:last-child').offsetHeight || 80;
-                            this.canvas.width = container.clientWidth;
-                            this.canvas.height = container.clientHeight - 20;
-                            
-                            this.ctx.lineWidth = 3;
-                            this.ctx.lineCap = 'round';
-                            this.ctx.lineJoin = 'round';
-                            this.ctx.strokeStyle = '#594A42';
-                        };
+const resizeCanvas = () => {
+    if (modal.classList.contains('hidden')) return;
+    this.canvas = document.getElementById('sig-canvas');
+    this.ctx = this.canvas.getContext('2d');
+    
+    // --- [新增] High DPI 支援，讓簽名在手機上變清晰 ---
+    const ratio = Math.max(window.devicePixelRatio || 1, 1);
+    this.canvas.width = container.clientWidth * ratio;
+    this.canvas.height = container.clientHeight * ratio;
+    this.ctx.scale(ratio, ratio);
+    // ------------------------------------------------
+    
+    // 樣式設定 (不用變)
+    this.ctx.lineWidth = 3;
+    this.ctx.lineCap = 'round';
+    this.ctx.lineJoin = 'round';
+    this.ctx.strokeStyle = '#594A42';
+};
                         
                         window.addEventListener('resize', resizeCanvas);
                         this.bindEvents();
@@ -2445,10 +2463,7 @@ this.lastContractData = contractData;
                         document.body.style.overflow = '';
                     },
                     
-                    clear() {
-                        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-                    },
-                    
+                   
                     save() {
                         const dataUrl = this.canvas.toDataURL('image/png');
                         
