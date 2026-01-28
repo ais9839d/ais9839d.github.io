@@ -425,9 +425,9 @@
                         </div>
                     </div>
 
-                    <div class="space-y-1">
-                        <label class="text-xs font-bold text-brand-light ml-1">電子信箱 (寄送契約副本) *</label>
-                        <input type="email" name="email" id="email" class="input-style" placeholder="example@email.com" required>
+<div class="space-y-1">
+                        <label class="text-xs font-bold text-brand-light ml-1">電子信箱(填寫則自動寄送契約副本)</label>
+                        <input type="email" name="email" id="email" class="input-style" placeholder="example@email.com">
                     </div>
 
                     <div class="space-y-1">
@@ -524,7 +524,7 @@
                                 <input type="radio" name="medicalHistory" value="有" class="hidden"> 有
                             </label>
                             <label class="option-card flex-1 py-2 rounded-xl flex items-center justify-center gap-1 text-xs font-bold" onclick="app.updateRadioStyle(this); app.toggleInput('medical-input', false)">
-                                <input type="radio" name="medicalHistory" value="無" class="hidden" checked> 無
+                                <input type="radio" name="medicalHistory" value="無" class="hidden" > 無
                             </label>
                         </div>
                         <input type="text" id="medical-input" name="medicalDetail" class="input-style hidden" placeholder="請說明過往病史...">
@@ -613,9 +613,9 @@
                         <div class="w-1.5 h-1.5 bg-brand-primary rounded-full"></div> 服務項目與計價
                     </h3>
                     
-                    <div class="grid grid-cols-2 gap-3 mb-3">
-                        <label class="option-card relative p-4 rounded-2xl flex flex-col items-center justify-center gap-2 text-center h-32 group" onclick="app.toggleOtherInput(false)">
-                            <input type="radio" name="serviceType" value="精緻洗澡洗+護" class="absolute opacity-0 w-full h-full cursor-pointer" checked>
+<div class="grid grid-cols-2 gap-3 mb-3">
+                        <label class="option-card relative p-4 rounded-2xl flex flex-col items-center justify-center gap-2 text-center h-32 group">
+                            <input type="radio" name="mainService" value="精緻洗澡洗+護" class="absolute opacity-0 w-full h-full cursor-pointer" required onchange="app.updateServiceUI()">
                             <i data-lucide="droplets" class="w-8 h-8 text-brand-primary group-hover:scale-110 transition-transform"></i>
                             <div>
                                 <h4 class="text-sm font-bold text-brand-text">精緻洗護</h4>
@@ -623,8 +623,8 @@
                             </div>
                         </label>
 
-                        <label class="option-card relative p-4 rounded-2xl flex flex-col items-center justify-center gap-2 text-center h-32 group" onclick="app.toggleOtherInput(false)">
-                            <input type="radio" name="serviceType" value="精緻造型剪毛" class="absolute opacity-0 w-full h-full cursor-pointer">
+                        <label class="option-card relative p-4 rounded-2xl flex flex-col items-center justify-center gap-2 text-center h-32 group">
+                            <input type="radio" name="mainService" value="精緻造型剪毛" class="absolute opacity-0 w-full h-full cursor-pointer" onchange="app.updateServiceUI()">
                             <i data-lucide="scissors" class="w-8 h-8 text-brand-primary group-hover:scale-110 transition-transform"></i>
                             <div>
                                 <h4 class="text-sm font-bold text-brand-text">精緻修剪</h4>
@@ -634,14 +634,14 @@
                     </div>
 
                     <div class="mb-6 space-y-3">
-                        <label class="option-card relative p-3 rounded-xl flex items-center justify-center gap-2 text-center group" onclick="app.toggleOtherInput(true)">
-                            <input type="radio" name="serviceType" value="其他項目" class="absolute opacity-0 w-full h-full cursor-pointer">
+                        <label class="option-card relative p-3 rounded-xl flex items-center justify-center gap-2 text-center group">
+                            <input type="checkbox" name="otherServiceAddon" id="otherServiceAddon" class="absolute opacity-0 w-full h-full cursor-pointer" onchange="app.toggleOtherInput(this.checked)">
                             <span class="text-sm font-bold text-brand-text">其他項目</span>
-                            <i data-lucide="more-horizontal" class="w-4 h-4 text-brand-primary"></i>
+                            <i data-lucide="plus-circle" class="w-4 h-4 text-brand-primary"></i>
                         </label>
 
                         <div id="other-input-container" class="hidden animate-fade-in">
-                            <input type="text" name="otherServiceDetail" id="otherServiceDetail" class="input-style bg-white border-brand-primary/50" placeholder="請輸入您需要的服務項目...">
+                            <input type="text" name="otherServiceDetail" id="otherServiceDetail" class="input-style bg-white border-brand-primary/50" placeholder="請輸入加點的服務內容...">
                         </div>
                     </div>
 
@@ -830,7 +830,7 @@
                                             <div class="flex items-start gap-2">
                                                 <i data-lucide="alert-triangle" class="w-4 h-4 text-red-500 shrink-0 mt-0.5"></i>
                                                 <p class="text-[11px] text-red-800 leading-relaxed text-justify font-bold">
-                                                    超過 1 小時以上，本店將先行 <span class="bg-red-200 text-red-900 px-1 rounded">安置犬貓</span> (提供水、飼料、貓砂)，屆時將收取必要之安置費用。
+                                                    超過 1 小時以上，本店將先行 <span class="bg-red-200 text-red-900 px-1 rounded">安置犬貓</span> (提供水、飼料)，屆時將收取必要之安置費用。
                                                 </p>
                                             </div>
                                         </div>
@@ -973,8 +973,23 @@
         </div>
     </div>
 
-    <script>
-        // --- 0. 先定義一個空的 app 物件，讓 HTML 的 onclick 不會報錯 ---
+<script>
+        // PWA 自動更新腳本 (sw.js)
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js').then(reg => {
+                    reg.onupdatefound = () => {
+                        const installingWorker = reg.installing;
+                        installingWorker.onstatechange = () => {
+                            if (installingWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                window.location.reload();
+                            }
+                        };
+                    };
+                });
+            });
+        }
+
         const app = {};
 
         // --- 1. 確保頁面與 Supabase 載入完成後再執行主要邏輯 ---
@@ -1429,65 +1444,93 @@ checkAdminAccess: function() {
                     });
                 },
 
-                // 輔助函數：填寫表單資料
+// 輔助函數：填寫表單資料 (舊客導入)
                 fillFormWithData: function(data) {
+                    // 0. 自動勾選 Line (舊客視為已加入)
+                    this.state.lineConfirmed = true;
+                    const btn = document.getElementById('line-check-btn');
+                    const icon = document.getElementById('line-check-icon');
+                    const text = document.getElementById('line-check-text');
+                    btn.className = "w-full flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-bold transition-all duration-300 border bg-[#06C755] text-white border-[#06C755] shadow-lg";
+                    icon.className = "w-4 h-4 rounded-full border border-white bg-white/20 flex items-center justify-center";
+                    icon.innerHTML = '<i data-lucide="check" size="10" class="w-3 h-3"></i>';
+                    text.innerText = "OK！我已加入並傳送貼圖";
+                    lucide.createIcons();
+
                     // 1. 填入飼主資料
-                    document.getElementById('ownerName').value = data.owner_name || '';
-                    document.getElementById('email').value = data.email || '';
-                    document.getElementById('ownerId').value = data.owner_id || '';
-                    document.getElementById('address').value = data.address || '';
-                    document.getElementById('emergencyName').value = data.emergency_name || '';
-                    document.getElementById('emergencyPhone').value = data.emergency_phone || '';
-                    document.getElementById('preferredClinic').value = data.preferred_clinic || '';
+                    document.getElementById('phone').value = data.owner_phone || ''; 
+                    document.getElementById('ownerName').value = data.owner_name || ''; 
+                    document.getElementById('ownerId').value = data.owner_id || ''; 
+                    document.getElementById('email').value = data.email || ''; 
+                    document.getElementById('address').value = data.address || ''; 
+                    document.getElementById('emergencyName').value = data.emergency_name || ''; 
+                    document.getElementById('emergencyPhone').value = data.emergency_phone || ''; 
+                    document.getElementById('preferredClinic').value = data.preferred_clinic || ''; 
 
                     // 2. 填入寵物資料
-                    document.getElementById('petName').value = data.pet_name || '';
-                    document.getElementById('breed').value = data.breed || '';
-                    document.getElementById('weight').value = data.weight || '';
-                    document.getElementById('ageYear').value = data.age || '';
+                    document.getElementById('petName').value = data.pet_name || ''; 
+                    document.getElementById('breed').value = data.breed || ''; 
+                    document.getElementById('weight').value = data.weight || ''; 
+                    document.getElementById('ageYear').value = data.age || ''; 
                     
-                    // 3. 處理晶片狀態
-                    const chipStatus = data.chip_status || '無晶片';
-                    const chipInput = document.getElementById('chip-input');
-                    
-                    // 找到對應的 radio 並觸發點擊
-                    const chipRadios = document.querySelectorAll('input[name="chipStatus"]');
-                    chipRadios.forEach(radio => {
-                        if (radio.value === chipStatus) {
-                            radio.checked = true;
-                            radio.closest('.option-card')?.click();
-                        }
-                    });
-
-                    if (chipStatus === '有晶片' && data.chip_id) {
-                        chipInput.value = data.chip_id;
-                    } else {
-                        chipInput.value = '';
-                    }
-                    
-                    // 4. 處理 Radio 按鈕 (性別、結紮、親人、親狗、攻擊性、病史)
+                    // 3. 處理單選項目 (導入歷史習慣)
                     this.setRadioValue('petSpecies', data.pet_species);
-                    this.setRadioValue('gender', data.gender);
-                    this.setRadioValue('ligation', data.ligation);
-                    this.setRadioValue('socialAggression', data.social_aggression);
-                    this.setRadioValue('socialInteraction', data.social_interaction);
-                    this.setRadioValue('temperament', data.temperament);
-                    this.setRadioValue('medicalHistory', data.medical_history);
-                    
-                    // 5. 填入病史描述
-                    document.getElementById('medical-input').value = data.medical_detail || '';
-
-                    // 6. 觸發高風險檢查 (如果年齡符合條件)
-                    this.checkRisk(data.age);
-                                       // 假設資料庫有欄位 'line_confirmed' (布林值)，且為 true
-                    if (data.line_confirmed === true) {
-                        this.state.lineConfirmed = true;
-                        // 呼叫 toggleLineCheck 來更新按鈕的 UI 樣式 (變綠色)
-                        this.toggleLineCheck();
+                    if (data.pet_species) {
+                        const speciesLabel = Array.from(document.querySelectorAll('input[name="petSpecies"]'))
+                            .find(i => i.value === data.pet_species)?.parentElement;
+                        if(speciesLabel) this.selectSpecies(data.pet_species, speciesLabel);
                     }
+                    this.setRadioValue('gender', data.gender); 
+                    this.setRadioValue('ligation', data.ligation); 
+                    this.setRadioValue('medicalHistory', data.medical_history); 
+                    this.setRadioValue('socialAggression', data.social_aggression); 
+                    this.setRadioValue('socialInteraction', data.social_interaction); 
+                    this.setRadioValue('temperament', data.temperament); 
+                    
+                    // --- 重寫：晶片狀況導入 ---
+                    this.setRadioValue('chipStatus', data.chip_status);
+                    const chipInput = document.getElementById('chip-input');
+                    chipInput.value = data.chip_id || '';
+                    if(data.chip_status === '有晶片') {
+                        this.toggleInput('chip-input', true);
+                    } else {
+                        this.toggleInput('chip-input', false);
+                    }
+
+                    // 4. 強制重置本次消費相關欄位 (不導入舊的服務與金額)
+// (1) 清除主服務與加點勾選
+                    document.querySelectorAll('input[name="mainService"]').forEach(radio => {
+                        radio.checked = false;
+                        radio.closest('.option-card')?.classList.remove('selected', 'bg-white', 'border-brand-primary', 'shadow-md');
+                    });
+                    const otherCb = document.getElementById('otherServiceAddon');
+                    if(otherCb) {
+                        otherCb.checked = false;
+                        otherCb.closest('.option-card')?.classList.remove('selected', 'bg-white', 'border-brand-primary', 'shadow-md');
+                    }
+                    document.getElementById('other-input-container').classList.add('hidden');
+                    // (3) 清除金額與打結勾選
+                    document.getElementById('basePrice').value = '';
+                    const mattingCb = document.querySelector('input[name="mattingSuspected"]');
+                    if(mattingCb) {
+                        mattingCb.checked = false;
+                        this.toggleMatting(mattingCb.parentElement);
+                    }
+                    // (4) 重置總金額顯示
+                    this.calculateTotal();
+
+                    // 5. 填入病史描述
+                    const medicalInput = document.getElementById('medical-input');
+                    medicalInput.value = data.medical_detail || '';
+                    if(data.medical_history === '有') {
+                        this.toggleInput('medical-input', true);
+                    } else {
+                        this.toggleInput('medical-input', false);
+                    }
+
+                    // 6. 觸發高風險檢查
+                    this.checkRisk(data.age);
                 },
-
-
                 updateRadioStyle(label) {
                     const radioName = label.querySelector('input').name;
                     document.querySelectorAll(`input[name="${radioName}"]`).forEach(input => {
@@ -1511,30 +1554,37 @@ checkAdminAccess: function() {
                     }
                 },
 
-                toggleOtherInput(show) {
-                    const container = document.getElementById('other-input-container');
-                    const input = document.getElementById('otherServiceDetail');
-                    
-                    document.querySelectorAll('input[name="serviceType"]').forEach(radio => {
+// 處理主服務 (二選一) 的視覺反饋
+                updateServiceUI() {
+                    document.querySelectorAll('input[name="mainService"]').forEach(radio => {
                         const card = radio.closest('.option-card');
-                        if(radio.checked) {
+                        if (radio.checked) {
                             card.classList.add('selected', 'bg-white', 'border-brand-primary', 'shadow-md');
                         } else {
                             card.classList.remove('selected', 'bg-white', 'border-brand-primary', 'shadow-md');
                         }
                     });
+                },
 
-                    if (show) {
+                // 處理其他項目 (加點) 的視覺反饋與輸入框切換
+                toggleOtherInput(checked) {
+                    const container = document.getElementById('other-input-container');
+                    const input = document.getElementById('otherServiceDetail');
+                    const checkbox = document.getElementById('otherServiceAddon');
+                    const card = checkbox.closest('.option-card');
+
+                    if (checked) {
+                        card.classList.add('selected', 'bg-white', 'border-brand-primary', 'shadow-md');
                         container.classList.remove('hidden');
                         input.required = true;
                         setTimeout(() => input.focus(), 100);
                     } else {
+                        card.classList.remove('selected', 'bg-white', 'border-brand-primary', 'shadow-md');
                         container.classList.add('hidden');
                         input.required = false;
                         input.value = '';
                     }
                 },
-
                 toggleMatting(label) {
                     const checkbox = label.querySelector('input[type="checkbox"]');
                     const details = document.getElementById('matting-details');
@@ -1796,12 +1846,28 @@ checkAdminAccess: function() {
                         social_interaction: document.querySelector('input[name="socialInteraction"]:checked').value,
                         temperament: document.querySelector('input[name="temperament"]:checked').value,
                         
-                        // --- 晶片資訊 ---
+// --- 晶片資訊 ---
                         chip_status: document.querySelector('input[name="chipStatus"]:checked').value,
                         chip_id: document.getElementById('chip-input').value,
                         
-                       // --- 服務與金額 (修改區) ---
-                        service_type: document.querySelector('input[name="serviceType"]:checked').value,
+// --- 服務與金額 (修改區：主服務 + 加點項目) ---
+                        service_type: (() => {
+                            // 1. 抓取主服務 (二選一)
+                            const mainEl = document.querySelector('input[name="mainService"]:checked');
+                            let result = mainEl ? mainEl.value : '';
+
+                            // 2. 抓取加點項目
+                            const isOtherChecked = document.getElementById('otherServiceAddon').checked;
+                            if (isOtherChecked) {
+                                const detail = document.getElementById('otherServiceDetail').value;
+                                // 如果有選主服務，就用 " + " 連接，否則直接顯示其他項目
+                                const prefix = result ? ' + ' : ''; 
+                                result += `${prefix}其他項目${detail ? `(${detail})` : ''}`;
+                            }
+                            
+                            return result || '未選擇';
+                        })(),
+
                         base_price: parseInt(document.getElementById('basePrice').value), // 基礎報價
                         
                         // --- 修改：升級加價 (直接紀錄區間字串) ---
@@ -1888,24 +1954,311 @@ checkAdminAccess: function() {
                         toast.show('上傳失敗，請稍後再試或聯繫店家', 'error');
                         submitBtn.disabled = false;
                         submitBtn.innerHTML = '<i data-lucide="send" class="w-4 h-4"></i> 確認送出預約';
-                        lucide.createIcons();
-                    } else {
-                        toast.show('預約資料已成功送出！期待見到毛孩！', 'success');
+} else {
+                        // 1. 判斷是否有填寫 Email
+                        const emailInput = document.getElementById('email').value.trim();
+                        const hasEmail = emailInput !== '';
+
+                        // 2. 如果有 Email，觸發寄信
+                        if (hasEmail) {
+                            window.supabaseClient.functions.invoke('send-mail', {
+                                body: { 
+                                    email: formData.email,
+                                    owner_name: formData.owner_name,
+                                    pet_name: formData.pet_name,
+                                    htmlContent: this.generateEmailHTML(formData) 
+                                }
+                            }).then(({ error }) => {
+                                if (error) console.error('Email 發送失敗:', error);
+                            });
+                        }
+
+                        toast.show('預約成功！準備跳轉...', 'success');
+
+                        // 3. 延遲一下讓 Toast 顯示，然後跳轉到下載/截圖頁面
                         setTimeout(() => {
+                            // 清除表單狀態，避免按返回鍵看到舊資料
                             form.reset();
-                            this.switchView('home');
                             this.state.lineConfirmed = false;
                             document.getElementById('sig-image').src = '';
                             document.getElementById('signature-result').classList.add('hidden');
                             document.getElementById('signature-trigger').classList.remove('hidden');
                             this.toggleLineCheck();
+                            
+                            // 恢復按鈕
                             submitBtn.disabled = false;
                             submitBtn.innerHTML = '<i data-lucide="send" class="w-4 h-4"></i> 確認送出預約';
-                            lucide.createIcons();
-                        }, 1500);
+
+                            // ★ 關鍵：呼叫顯示結果頁面
+                            this.showDownloadPage(formData, hasEmail);
+                            
+                        }, 1000);
                     }
                 },
+// --- 修改：產生合約 HTML (供截圖與 Email 使用) ---
+                generateEmailHTML(data) {
+                    const now = new Date().toLocaleString('zh-TW', { hour12: false });
+                    
+                    // 判定高風險邏輯
+                    const isHighRisk = (data.age >= 8 || data.age <= 1) || 
+                                     data.medical_history === '有' || 
+                                     data.temperament === '恰北北/護主';
 
+                    // 樣式設定
+                    const style = {
+                        container: "font-family: 'Microsoft JhengHei', sans-serif; max-width: 800px; margin: 0 auto; background-color: #ffffff; color: #333; line-height: 1.5;",
+                        header: "text-align: center; border-bottom: 3px solid #C7B299; padding-bottom: 20px; margin-bottom: 25px;",
+                        sectionBox: "border: 1px solid #ddd; border-radius: 8px; padding: 12px; margin-bottom: 15px;",
+                        sectionTitle: "background-color: #F9F4F0; color: #594A42; font-weight: bold; padding: 8px 12px; margin: -12px -12px 12px -12px; border-radius: 8px 8px 0 0; border-bottom: 1px solid #ddd; font-size: 14px;",
+                        table: "width: 100%; border-collapse: collapse; font-size: 13px;",
+                        tdLabel: "width: 22%; padding: 6px; color: #666; font-weight: bold; border-bottom: 1px solid #eee; vertical-align: top;",
+                        tdValue: "padding: 6px; color: #000; border-bottom: 1px solid #eee;",
+                        warningBox: "background-color: #fff5f5; border: 2px solid #fc8181; color: #c53030; padding: 15px; border-radius: 8px; margin-bottom: 20px;",
+                        termText: "font-size: 11px; color: #555; text-align: justify; margin-bottom: 6px; line-height: 1.4;",
+                        termHeader: "font-size: 12px; font-weight: bold; color: #594A42; margin-top: 10px; margin-bottom: 5px;"
+                    };
+
+                    // 1. 一般條款全文 (對應 modal-general-content)
+                    const generalTerms = `
+                        <div style="${style.termText}"><span style="color:#000;font-weight:bold;">第一條(契約目的與服務範圍)</span> 本契約所稱犬、貓美容服務，係指清洗、清潔、吹乾、梳毛、毛髮修剪及造型設計等行為，不涉及任何動物醫療行為。</div>
+                        <div style="${style.termText}"><span style="color:#000;font-weight:bold;">第二條(資訊揭露與契約效力)</span> 本契約及其附件、公告事項，均視為本契約之一部分，經雙方簽署後生效。</div>
+                        <div style="${style.termText}"><span style="color:#000;font-weight:bold;">第三條(基本資料)</span> 應記載犬、貓、飼主及美容店之基本資料，詳如填載內容。</div>
+                        <div style="${style.termText}"><span style="color:#000;font-weight:bold;">第四條(詢問義務與誠實告知)</span> 飼主應誠實告知寵物個性、攻擊性、病史。若未如實告知致發生異常，非店家之責。</div>
+                        <div style="${style.termText}"><span style="color:#000;font-weight:bold;">第五條(攻擊行為與安全中止)</span> 若出現抓咬、持續抗拒等危及安全行為，店家得立即中止服務。</div>
+                        <div style="${style.termText}"><span style="color:#000;font-weight:bold;">第六條(抗拒、躁動致無法完成服務)</span> 因寵物緊張躁動致難以繼續，店家得中止或縮短流程，屬不可歸責雙方之事由。</div>
+                        <div style="${style.termText}"><span style="color:#000;font-weight:bold;">第七條(應激反應與突發異常)</span> 美容期間如發生應激反應(喘氣/失禁等)，店家將即時處理或送醫。非人為疏失不負賠償責任。</div>
+                        <div style="${style.termText}"><span style="color:#000;font-weight:bold;">第八條(毛髮打結與處理方式調整)</span> 現場發現嚴重打結，店家得依實際狀況調整處理方式（包含剃毛）及計收拆結費。</div>
+                        <div style="${style.termText}"><span style="color:#000;font-weight:bold;">第九條(服務中止與費用計算)</span> 即使服務未完成，已實施之洗、吹、剪等項目，飼主仍需支付費用。</div>
+                        <div style="${style.termText}"><span style="color:#000;font-weight:bold;">第十條(異常狀況及責任歸屬)</span> 發生異常或死亡，若屬店家過失依法負責；非店家過失則不負賠償責任。</div>
+                        
+                        <div style="${style.termHeader}">二、服務項目與收費</div>
+                        <div style="${style.termText}">收費以現場評估體重/毛量為準。發現寄生蟲需加收環境清潔費$1000。美容後逾時1小時未接回，將收取安親費(犬$200/貓$300每小時)。</div>
+
+                        <div style="${style.termHeader}">三、健康與接待規定</div>
+                        <div style="${style.termText}">不接待：未滿3個月、疫苗未全、有傳染病、心臟病、癲癇之寵物。故意隱瞞致人員受傷需負擔醫療費。</div>
+
+                        <div style="${style.termHeader}">四、其他條款</div>
+                        <div style="${style.termText}">1. 輕微剃傷(小於1cm)為美容常見風險，店家負責消毒。操作疏失最高賠償$2000。<br>2. 緊急狀況無法聯繫飼主時，將立即送醫，費用由飼主負擔。<br>3. 飼主同意店家拍攝並使用照片於行銷用途。</div>
+                    `;
+
+                    // 2. 高風險條款全文 (對應 modal-risk-content)
+                    const riskTerms = `
+                        <div style="font-weight:bold; margin-bottom:10px; border-bottom:1px solid #feb2b2; padding-bottom:5px;">⚠️ 高風險寵物美容特別條款</div>
+                        <div style="${style.termText}"><strong>一、飼主誠實告知義務</strong> 本人確認已完整告知寵物年齡、病史及行為特性。如因未告知致生意外，店家不負責任。</div>
+                        <div style="${style.termText}"><strong>二、高齡與特殊健康狀況之風險</strong> 本人知悉高齡(8歲+)或幼體(1歲-)寵物，美容過程可能因緊張誘發休克、舊疾復發。若非店家故意或重大過失，店家不負賠償責任。</div>
+                        <div style="${style.termText}"><strong>三、攻擊性與安全防護</strong> 若寵物有攻擊性，同意店家採取戴嘴套等防護措施。若危及安全，店家得隨時中止服務並收費。</div>
+                        <div style="${style.termText}"><strong>四、緊急醫療處置</strong> 發生緊急狀況時，同意店家優先將寵物送醫，費用由本人負擔。</div>
+                    `;
+
+                    return `
+                        <html>
+                        <head><title>美容服務契約書 - ${data.pet_name}</title></head>
+                        <body style="background-color: #f0f0f0; padding: 20px;">
+                        <div style="${style.container}">
+                            <div style="padding: 30px;">
+                                <div style="${style.header}">
+                                    <h1 style="color: #594A42; margin: 0; font-size: 24px; letter-spacing: 2px;">麥克諾尼 | 日式寵物沙龍</h1>
+                                    <p style="color: #8A7B70; font-size: 14px; margin: 8px 0 0 0;">寵物美容服務定型化契約書</p>
+                                    <div style="font-size: 11px; color: #999; margin-top: 8px; font-family: monospace;">
+                                        單號：${Date.now()} / 簽署時間：${now}
+                                    </div>
+                                </div>
+
+                                <div style="${style.sectionBox}">
+                                    <div style="${style.sectionTitle}">▍ 飼主基本資料</div>
+                                    <table style="${style.table}">
+                                        <tr><td style="${style.tdLabel}">飼主姓名</td><td style="${style.tdValue}">${data.owner_name}</td></tr>
+                                        <tr><td style="${style.tdLabel}">聯絡電話</td><td style="${style.tdValue}">${data.owner_phone}</td></tr>
+                                        <tr><td style="${style.tdLabel}">身分證字號</td><td style="${style.tdValue}">${data.owner_id}</td></tr>
+                                        <tr><td style="${style.tdLabel}">電子信箱</td><td style="${style.tdValue}">${data.email || '<span style="color:#ccc">未填寫</span>'}</td></tr>
+                                        <tr><td style="${style.tdLabel}">通訊地址</td><td style="${style.tdValue}">${data.address}</td></tr>
+                                        <tr><td style="${style.tdLabel}">緊急聯絡人</td><td style="${style.tdValue}">${data.emergency_name} (${data.emergency_phone})</td></tr>
+                                        <tr><td style="${style.tdLabel}">指定醫院</td><td style="${style.tdValue}">${data.preferred_clinic || '無 (由店家指定)'}</td></tr>
+                                    </table>
+                                </div>
+
+                                <div style="${style.sectionBox}">
+                                    <div style="${style.sectionTitle}">▍ 寵物詳細資料</div>
+                                    <table style="${style.table}">
+                                        <tr>
+                                            <td style="${style.tdLabel}">名字/品種</td>
+                                            <td style="${style.tdValue}">${data.pet_name} (${data.breed})</td>
+                                        </tr>
+                                        <tr>
+                                            <td style="${style.tdLabel}">基本資訊</td>
+                                            <td style="${style.tdValue}">
+                                                ${data.pet_species} / ${data.gender} / ${data.weight} kg / ${data.age} 歲
+                                                ${(data.age >= 8 || data.age <= 1) ? '<span style="color:red; font-weight:bold;">(高風險年齡)</span>' : ''}
+                                            </td>
+                                        </tr>
+                                        <tr><td style="${style.tdLabel}">結紮狀況</td><td style="${style.tdValue}">${data.ligation}</td></tr>
+                                        <tr>
+                                            <td style="${style.tdLabel}">晶片號碼</td>
+                                            <td style="${style.tdValue}">
+                                                ${data.chip_status} 
+                                                ${data.chip_id ? `<span style="font-family:monospace; font-weight:bold; margin-left:5px;">(${data.chip_id})</span>` : ''}
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+
+                                <div style="${style.sectionBox}">
+                                    <div style="${style.sectionTitle}">▍ 健康與行為評估</div>
+                                    <table style="${style.table}">
+                                        <tr>
+                                            <td style="${style.tdLabel}">過往病史</td>
+                                            <td style="${style.tdValue}">
+                                                ${data.medical_history}
+                                                ${data.medical_detail ? `<br><span style="color:#666; font-size:12px;">說明：${data.medical_detail}</span>` : ''}
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td style="${style.tdLabel}">社交/互動</td>
+                                            <td style="${style.tdValue}">
+                                                對狗：${data.social_interaction}<br>
+                                                對人：${data.social_aggression}
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td style="${style.tdLabel}">美容性情</td>
+                                            <td style="${style.tdValue}">
+                                                ${data.temperament}
+                                                ${data.temperament === '恰北北/護主' ? '<span style="color:red; font-weight:bold;"> (需加強防護)</span>' : ''}
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+
+                                <div style="${style.sectionBox} border-color: #C7B299;">
+                                    <div style="${style.sectionTitle} background-color: #C7B299; color: white;">▍ 本次服務項目確認</div>
+                                    <table style="${style.table}">
+                                        <tr><td style="${style.tdLabel}">服務項目</td><td style="${style.tdValue} font-weight:bold;">${data.service_type}</td></tr>
+                                        <tr><td style="${style.tdLabel}">升級 SPA</td><td style="${style.tdValue}">${data.spa_upgrades || '無'}</td></tr>
+                                        <tr>
+                                            <td style="${style.tdLabel}">打結/拆結</td>
+                                            <td style="${style.tdValue}">
+                                                ${data.matting_suspected ? 
+                                                    `<span style="color:#d97706; font-weight:bold;">疑似有打結 (方案：${data.matting_choice})</span>` : 
+                                                    '無'}
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td style="${style.tdLabel}">支付方式</td>
+                                            <td style="${style.tdValue}">${data.payment_method}</td>
+                                        </tr>
+                                        <tr style="background-color: #fcfcfc;">
+                                            <td style="${style.tdLabel} border-bottom:none; padding-top:15px;">金額預估</td>
+                                            <td style="${style.tdValue} border-bottom:none; font-size: 20px; font-weight: bold; color: #594A42; padding-top:15px;">
+                                                $${data.total_price}
+                                                <div style="font-size:10px; color:#999; font-weight:normal;">(含基礎報價 $${data.base_price} + 升級 $${data.upgrade_price || 0})</div>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+
+                                ${isHighRisk ? `<div style="${style.warningBox}">${riskTerms}</div>` : ''}
+
+                                <div style="margin-top: 25px;">
+                                    <h3 style="font-size: 14px; border-bottom: 2px solid #eee; padding-bottom: 5px; color:#888;">美容服務契約條款全文</h3>
+                                    ${generalTerms}
+                                </div>
+
+                                <div style="margin-top: 30px; padding-top: 20px; border-top: 2px dashed #ccc; text-align: center;">
+                                    <p style="font-weight: bold; margin-bottom: 10px;">立契約書人 (飼主) 簽署</p>
+                                    <div style="display:inline-block; border:1px solid #eee; padding:10px; border-radius:10px;">
+                                        <img src="${data.signature_data}" style="max-height: 100px; max-width: 100%; display: block;" alt="飼主簽名" />
+                                    </div>
+                                    <p style="font-size: 11px; color: #999; margin-top: 5px;">
+                                        IP: (由系統自動紀錄) / Time: ${now}
+                                    </p>
+                                    <p style="font-size: 11px; color: #999; margin-top: 20px;">
+                                        本契約副本已由系統自動留存，並具備法律效力。
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        </body>
+                        </html>
+                    `;
+                },
+                
+                // --- 新增：顯示下載頁面與警告邏輯 ---
+                showDownloadPage(contractData, hasEmail) {
+                    // 1. 隱藏所有原本的 View
+                    document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+                    document.getElementById('back-btn').classList.add('hidden'); // 隱藏返回按鈕
+
+                    // 2. 移除舊的下載頁 (如果有的話)
+                    const oldView = document.getElementById('view-download');
+                    if(oldView) oldView.remove();
+
+                    // 3. 準備標題與警告內容
+                    const title = hasEmail ? '契約已寄出！' : '提交成功！';
+                    
+                    // 根據有無 Email 顯示不同顏色的警告框
+                    const alertBox = hasEmail
+                        ? `<div class="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6 text-sm text-blue-800 shadow-sm">
+                             <div class="font-bold flex items-center gap-2 mb-2 text-lg"><i data-lucide="mail-check" class="w-5 h-5"></i> 副本已寄出</div>
+                             <p class="leading-relaxed">契約副本已發送至您的信箱。<br>建議您仍可點擊下方按鈕，開啟完整契約進行<strong>截圖備份</strong>。</p>
+                           </div>`
+                        : `<div class="bg-red-50 border-2 border-red-200 rounded-xl p-4 mb-6 text-sm text-red-800 animate-pulse shadow-md">
+                             <div class="font-bold flex items-center gap-2 mb-2 text-lg"><i data-lucide="alert-triangle" class="w-6 h-6 text-red-600"></i> 未填寫信箱</div>
+                             <p class="leading-relaxed font-bold text-base">您未填寫 Email，無法收到電子副本。</p>
+                             <p class="mt-2 text-red-600">請務必點擊下方按鈕開啟契約，並立即<span class="text-xl underline">截圖保存</span>！</p>
+                           </div>`;
+
+                    // 4. 建立新的 View
+                    const main = document.querySelector('main');
+                    const downloadView = document.createElement('div');
+                    downloadView.id = 'view-download';
+                    downloadView.className = 'view-section active animate-fade-in space-y-6 px-2';
+                    
+                    downloadView.innerHTML = `
+                        <div class="text-center pt-10 pb-4">
+                            <div class="w-24 h-24 mx-auto mb-4 rounded-full ${hasEmail ? 'bg-[#06C755]/10' : 'bg-red-100'} flex items-center justify-center">
+                                <i data-lucide="${hasEmail ? 'check' : 'alert-circle'}" class="w-12 h-12 ${hasEmail ? 'text-[#06C755]' : 'text-red-500'} stroke-[3]"></i>
+                            </div>
+                            <h2 class="text-3xl font-bold text-brand-text mb-2 tracking-wide">${title}</h2>
+                        </div>
+                        
+                        <div>${alertBox}</div>
+                        
+                        <div class="space-y-4 pt-4">
+                            <button onclick="app.openFullContract()" class="w-full bg-brand-text text-white py-5 rounded-2xl font-bold shadow-xl shadow-brand-text/30 flex items-center justify-center gap-3 text-lg hover:bg-brand-dark active:scale-95 transition-all group border-2 border-brand-text">
+                                <div class="bg-white/20 p-2 rounded-full group-hover:rotate-12 transition-transform">
+                                    <i data-lucide="camera" class="w-6 h-6 text-white"></i>
+                                </div>
+                                <span>開啟完整契約 (截圖保存)</span>
+                            </button>
+
+                            <button onclick="window.location.reload()" class="w-full bg-white text-brand-light py-4 rounded-2xl font-bold shadow-sm border border-gray-200 flex items-center justify-center gap-2 active:scale-95 transition-all hover:bg-gray-50">
+                                <i data-lucide="home" class="w-5 h-5"></i>
+                                <span>返回首頁 (完成)</span>
+                            </button>
+                        </div>
+                        <div class="h-20"></div>
+                    `;
+                    
+                    main.appendChild(downloadView);
+                    lucide.createIcons();
+                    window.scrollTo({top: 0, behavior: 'smooth'});
+
+                    // 暫存資料給 openFullContract 使用
+this.lastContractData = contractData;
+                },
+
+                // --- 新增：開啟新視窗顯示合約 ---
+                openFullContract() {
+                    if (!this.lastContractData) return;
+                    const content = this.generateEmailHTML(this.lastContractData);
+                    const newWin = window.open('', '_blank');
+                    if (newWin) {
+                        newWin.document.write(content);
+                        newWin.document.close();
+                    } else {
+                        alert('彈出視窗被阻擋，請允許開啟視窗');
+                    }
+                },
                 signaturePad: {
                     canvas: null,
                     ctx: null,
@@ -2083,10 +2436,10 @@ checkAdminAccess: function() {
                     <div><span class="font-bold text-brand-dark">第四條（詢問義務與誠實告知）</span><br>飼主應誠實告知寵物個性、攻擊性、病史。若未如實告知致發生異常，非店家之責。</div>
                     <div><span class="font-bold text-brand-dark">第五條（攻擊行為與安全中止）</span><br>若出現抓咬、持續抗拒等危及安全行為，店家得立即中止服務。</div>
                     <div><span class="font-bold text-brand-dark">第六條（抗拒、躁動致無法完成服務）</span><br>因寵物緊張躁動致難以繼續，店家得中止或縮短流程，屬不可歸責雙方之事由。</div>
-                    <div><span class="font-bold text-brand-dark">第八條（應激反應與突發異常）</span><br>美容期間如發生應激反應(喘氣/失禁等)，店家將即時處理或送醫。非人為疏失不負賠償責任。</div>
-                    <div><span class="font-bold text-brand-dark">第九條（毛髮打結與處理方式調整）</span><br>現場發現嚴重打結，店家得依實際狀況調整處理方式（包含剃毛）及計收拆結費。</div>
-                    <div><span class="font-bold text-brand-dark">第十條（服務中止與費用計算）</span><br>即使服務未完成，已實施之洗、吹、剪等項目，飼主仍需支付費用。</div>
-                    <div><span class="font-bold text-brand-dark">第十一條（異常狀況及責任歸屬）</span><br>發生異常或死亡，若屬店家過失依法負責；非店家過失則不負賠償責任。</div>
+                    <div><span class="font-bold text-brand-dark">第七條（應激反應與突發異常）</span><br>美容期間如發生應激反應(喘氣/失禁等)，店家將即時處理或送醫。非人為疏失不負賠償責任。</div>
+                    <div><span class="font-bold text-brand-dark">第八條（毛髮打結與處理方式調整）</span><br>現場發現嚴重打結，店家得依實際狀況調整處理方式（包含剃毛）及計收拆結費。</div>
+                    <div><span class="font-bold text-brand-dark">第九條（服務中止與費用計算）</span><br>即使服務未完成，已實施之洗、吹、剪等項目，飼主仍需支付費用。</div>
+                    <div><span class="font-bold text-brand-dark">第十條（異常狀況及責任歸屬）</span><br>發生異常或死亡，若屬店家過失依法負責；非店家過失則不負賠償責任。</div>
                     <div><span class="font-bold text-brand-dark">二、服務項目與收費</span><br>收費以現場評估體重/毛量為準。發現寄生蟲需加收環境清潔費$1000。美容後逾時1小時未接回，將收取安親費(犬$200/貓$300每小時)。</div>
                     <div><span class="font-bold text-brand-dark">三、健康與接待規定</span><br>不接待：未滿3個月、疫苗未全、有傳染病、心臟病、癲癇之寵物。故意隱瞞致人員受傷需負擔醫療費。</div>
                     <div><span class="font-bold text-brand-dark">四、其他條款</span><br>1. 輕微剃傷(小於1cm)為美容常見風險，店家負責消毒。操作疏失最高賠償$2000。<br>2. 緊急狀況無法聯繫飼主時，將立即送醫，費用由飼主負擔。<br>3. 飼主同意店家拍攝並使用照片於行銷用途。</div>
