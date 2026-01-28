@@ -1115,15 +1115,39 @@
                     toast.init();
                     this.renderBanner();
                     this.renderProducts();
-                    this.renderSpaList('dog-spa-container', this.data.dogSpas);
-                    this.renderSpaList('cat-spa-container', this.data.catSpas);
+// 改為從資料庫讀取動態價目
+                    this.loadDynamicPrices();
                     
                     const hash = window.location.hash.replace('#', '');
                     if(hash) this.switchView(hash);
                     
                     this.signaturePad.init();
                 },
+async loadDynamicPrices() {
+                    try {
+                        const { data, error } = await window.supabaseClient
+                            .from('price_settings')
+                            .select('*')
+                            .order('id', { ascending: true });
 
+                        if (error) throw error;
+
+                        // 將資料分配給狗狗跟貓咪
+                        const dogList = data.filter(i => i.category === 'dog_spa');
+                        const catList = data.filter(i => i.category === 'cat_spa');
+
+                        // 渲染列表
+                        this.renderSpaList('dog-spa-container', dogList);
+                        this.renderSpaList('cat-spa-container', catList);
+                        
+                        console.log('動態價目載入成功');
+                    } catch (err) {
+                        console.error('載入價目失敗，使用預設值:', err);
+                        // 如果資料庫壞了，才讀取原本寫死的 data.dogSpas
+                        this.renderSpaList('dog-spa-container', this.data.dogSpas);
+                        this.renderSpaList('cat-spa-container', this.data.catSpas);
+                    }
+                },
                 renderBanner() {
                     const bannerContainer = document.getElementById('banner-container');
                     const allImages = [...this.data.bannerImages, ...this.data.bannerImages, ...this.data.bannerImages, ...this.data.bannerImages];
