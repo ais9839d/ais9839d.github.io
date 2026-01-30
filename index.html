@@ -1787,12 +1787,28 @@ checkAdminAccess: function() {
                         return;
                     }
                     
-                    const phoneInput = document.getElementById('phone');
+const phoneInput = document.getElementById('phone');
                     const phoneRegex = /^09\d{8}$/;
                     if (phoneInput.value && !phoneRegex.test(phoneInput.value)) {
                         toast.show('手機號碼格式錯誤，請輸入 09 開頭的 10 碼數字', 'error');
                         phoneInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
                         phoneInput.focus();
+                        return;
+                    }
+
+if (ownerIdInput.value && !idRegex.test(ownerIdInput.value)) {
+                        toast.show('身分證字號格式錯誤，請輸入 1 碼大寫字母 + 9 碼數字', 'error');
+                        ownerIdInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        ownerIdInput.focus();
+                        return;
+                    }
+
+                    // --- 緊急聯絡電話格式驗證 ---
+                    const emergencyPhoneInput = document.getElementById('emergencyPhone');
+                    if (emergencyPhoneInput.value && !phoneRegex.test(emergencyPhoneInput.value)) {
+                        toast.show('緊急聯絡電話格式錯誤，請輸入 09 開頭的 10 碼數字', 'error');
+                        emergencyPhoneInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        emergencyPhoneInput.focus();
                         return;
                     }
 
