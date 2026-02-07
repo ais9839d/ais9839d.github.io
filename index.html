@@ -245,7 +245,21 @@
         .toast-content { flex: 1; }
         .toast-title { font-weight: 700; font-size: 0.9rem; color: #594A42; margin-bottom: 2px; }
         .toast-message { font-size: 0.75rem; color: #8A7B70; font-weight: 500; }
-
+/* ====== 錯誤欄位紅字提示 (新增) ====== */
+.field-error {
+    border-color: #ef4444 !important;
+    background-color: #fff5f5 !important;
+}
+.field-error-message {
+    color: #ef4444;
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-top: 0.25rem;
+}
+.field-error-box {
+    border-color: #ef4444 !important;
+    background-color: #fff5f5 !important;
+}
 
     </style>
 </head>
@@ -417,7 +431,10 @@
     
     <div class="space-y-1">                        <label class="text-xs font-bold text-brand-light ml-1">手機號碼 *</label>
                         <div class="flex gap-2">
-                            <input type="tel" name="phone" id="phone" class="input-style" placeholder="09xxxxxxxx" autocomplete="tel" required>
+<input type="tel" name="phone" id="phone"
+       pattern="^09\d{8}$"
+       minlength="10" maxlength="10"
+       class="input-style" required>
 <button type="button" onclick="app.handleSearchOldCustomer()" class="whitespace-nowrap px-4 bg-brand-primary text-white text-xs font-bold rounded-xl shadow-sm active:scale-95 transition-transform">帶入紀錄</button>
                         </div>
                         <p class="text-[12px] text-brand-light/80 pl-1 flex items-center gap-1 pt-1">
@@ -429,23 +446,20 @@
                     <div class="grid grid-cols-2 gap-3">
                         <div class="space-y-1">
                             <label class="text-xs font-bold text-brand-light ml-1">飼主姓名 *</label>
-                            <input type="text" name="ownerName" id="ownerName" class="input-style" placeholder="" required>
+<input type="text" name="ownerName" id="ownerName" class="input-style" required>
                         </div>
                         <div class="space-y-1">
                             <label class="text-xs font-bold text-brand-light ml-1">身分證字號 *</label>
-<input 
-    type="text" 
-    name="ownerId" 
-    id="ownerId" 
-    class="input-style" 
-    placeholder="" 
-    required 
-    oninput="this.value = this.value.toUpperCase()" >
+<input type="text" name="ownerId" id="ownerId"
+       pattern="^[A-Z][12]\d{8}$"
+       minlength="10" maxlength="10"
+       class="input-style" required
+       oninput="this.value=this.value.toUpperCase()">
                         </div>
                     </div>
 
 <div class="space-y-1">
-                        <label class="text-xs font-bold text-brand-light ml-1">電子信箱(填寫則自動寄送契約副本)</label>
+                        <label class="text-xs font-bold text-brand-light ml-1">電子信箱(填寫將寄送契約副本)</label>
                         <input type="email" name="email" id="email" class="input-style" placeholder="example@email.com">
                     </div>
 
@@ -461,7 +475,10 @@
                         </div>
                         <div class="space-y-1">
                             <label class="text-xs font-bold text-brand-dark ml-1">緊急電話 *</label>
-<input type="tel" name="emergencyPhone" id="emergencyPhone" class="input-style" placeholder="" required autocomplete="tel">
+<input type="tel" id="emergencyPhone" name="emergencyPhone"
+       pattern="^09\d{8}$"
+       minlength="10" maxlength="10"
+       class="input-style" required>
                         </div>
                     </div>
 
@@ -1015,7 +1032,7 @@
         // PWA 自動更新腳本 (sw.js)
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('sw.js?v=6').then(reg => {
+                navigator.serviceWorker.register('sw.js?v=7').then(reg => {
                     reg.onupdatefound = () => {
                         const installingWorker = reg.installing;
                         installingWorker.onstatechange = () => {
@@ -1166,7 +1183,45 @@ init() {
         // 如果 Hash 變成空的，代表回到首頁
         this.switchView(currentHash || 'home', false);
     });
-    
+document.querySelectorAll('input[required], textarea[required], select[required]').forEach(el => {
+    el.addEventListener('blur', () => {
+        if (!el.checkValidity()) {
+            this.showFieldError(el, '此欄位必填');
+                   } else {
+            this.clearFieldError(el); 
+        }
+    });
+});
+// ====== 即時驗證 + 離開欄位顯示錯誤 ======
+const regexMap = {
+    phone: /^09\d{8}$/,
+    emergencyPhone: /^09\d{8}$/,
+    ownerId: /^[A-Z][12]\d{8}$/
+};
+
+// 1. 輸入時：若格式正確就清除錯誤
+document.querySelectorAll('input, textarea, select').forEach(el => {
+    el.addEventListener('input', () => {
+        if (el.checkValidity()) this.clearFieldError(el);
+    });
+});
+
+// 2. 離開欄位時：如果格式錯誤就顯示紅字
+Object.keys(regexMap).forEach(id => {
+    const input = document.getElementById(id);
+    if (!input) return;
+
+    input.addEventListener('blur', () => {
+        const value = input.value.trim();
+        if (value === '') return;
+
+        if (!regexMap[id].test(value)) {
+            this.showFieldError(input, '格式錯誤');
+        } else {
+            this.clearFieldError(input);
+        }
+    });
+});
     this.signaturePad.init();
 },
 
@@ -1630,7 +1685,69 @@ checkAdminAccess: function() {
                         el.value = '';
                     }
                 },
-
+// ====== 錯誤紅字工具函式 (新增) ======
+clearAllFieldErrors() {
+    document.querySelectorAll('.field-error-message').forEach(el => el.remove());
+    document.querySelectorAll('.field-error').forEach(el => el.classList.remove('field-error'));
+    document.querySelectorAll('.field-error-box').forEach(el => el.classList.remove('field-error-box'));
+},
+showFieldError(input, message) {
+    if (!input) return;
+    let container = input.closest('.space-y-1') || input.closest('.space-y-2') || input.closest('.grid') || input.closest('.flex') || input.parentElement;
+    if (container) {
+        const old = container.querySelector('.field-error-message');
+        if (old) old.remove();
+        const msg = document.createElement('div');
+        msg.className = 'field-error-message';
+        msg.innerText = message;
+        container.appendChild(msg);
+    }
+    if (input.type === 'radio' || input.type === 'checkbox') {
+        document.querySelectorAll(`input[name="${input.name}"]`).forEach(el => el.classList.add('field-error'));
+    } else {
+        input.classList.add('field-error');
+    }
+},
+clearFieldError(input) {
+    if (!input) return;
+    if (input.type === 'radio' || input.type === 'checkbox') {
+        document.querySelectorAll(`input[name="${input.name}"]`).forEach(el => el.classList.remove('field-error'));
+        const container = input.closest('.space-y-1') || input.closest('.space-y-2') || input.closest('.grid') || input.closest('.flex') || input.parentElement;
+        if (container) {
+            const msg = container.querySelector('.field-error-message');
+            if (msg) msg.remove();
+        }
+    } else {
+        input.classList.remove('field-error');
+        const container = input.closest('.space-y-1') || input.closest('.space-y-2') || input.parentElement;
+        if (container) {
+            const msg = container.querySelector('.field-error-message');
+            if (msg) msg.remove();
+        }
+    }
+},
+showBoxError(element, message) {
+    if (!element) return;
+    element.classList.add('field-error-box');
+    const container = element.parentElement;
+    if (container) {
+        const old = container.querySelector('.field-error-message');
+        if (old) old.remove();
+        const msg = document.createElement('div');
+        msg.className = 'field-error-message';
+        msg.innerText = message;
+        container.appendChild(msg);
+    }
+},
+clearBoxError(element) {
+    if (!element) return;
+    element.classList.remove('field-error-box');
+    const container = element.parentElement;
+    if (container) {
+        const msg = container.querySelector('.field-error-message');
+        if (msg) msg.remove();
+    }
+},
 // 處理主服務 (二選一) 的視覺反饋
                 updateServiceUI() {
                     document.querySelectorAll('input[name="mainService"]').forEach(radio => {
@@ -1725,370 +1842,353 @@ checkAdminAccess: function() {
                     document.getElementById('totalPriceDisplay').innerText = totalText;
                 },
 
-                async handleFormSubmit(e) {
-                    e.preventDefault();
-                    const form = e.target;
+async handleFormSubmit(e) {
+    e.preventDefault();
+    const form = e.target;
 
-                    if (!form.checkValidity()) {
-                        const invalidInput = form.querySelector(':invalid');
-                        if (invalidInput) {
-                            let fieldName = "必填欄位";
-                            const nameMap = {
-                                'phone': '手機號碼',
-                                'ownerName': '飼主姓名',
-                                'ownerId': '身分證字號',
-                                'email': '電子信箱',
-                                'address': '通訊地址',
-                                'emergencyName': '緊急聯絡人',
-                                'emergencyPhone': '緊急電話',
-                                'petSpecies': '寵物種類',
-                                'petName': '寵物名字',
-                                'breed': '寵物品種',
-                                'weight': '體重',
-                                'ageYear': '年齡',
-                                'gender': '性別',
-                                'ligation': '結紮狀況',
-                                'medicalHistory': '過往病史',
-                                'socialAggression': '社交狀況-對人反應',
-                                'socialInteraction': '社交狀況-對狗反應',
-                                'temperament': '攻擊性評估',
-                                'chipStatus': '晶片狀況',
-                                'paymentMethod': '支付方式',
-                                'agreement': '契約條款勾選',
-                                'basePrice': '基礎報價',
-                                'chipId': '晶片號碼',
-                            };
+    // 先清除舊的錯誤紅字
+    this.clearAllFieldErrors();
 
-                            if (nameMap[invalidInput.name]) {
-                                fieldName = nameMap[invalidInput.name];
-                            } else {
-                                const container = invalidInput.closest('.space-y-1') || invalidInput.closest('.space-y-2');
-                                if (container) {
-                                    const label = container.querySelector('label:not(.option-card)');
-                                    if (label) fieldName = label.innerText.replace('*', '').trim();
-                                } else if (invalidInput.placeholder) {
-                                    fieldName = invalidInput.placeholder;
-                                }
-                            }
-                            
-                            toast.show(`請檢查「${fieldName}」是否已填寫正確`, 'error', '資料不完整');
-                            invalidInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                            
-                            if (invalidInput.type === 'radio') {
-                                const group = invalidInput.closest('.grid') || invalidInput.closest('.flex');
-                                if(group) {
-                                    group.classList.add('animate-pulse');
-                                    setTimeout(() => group.classList.remove('animate-pulse'), 500);
-                                }
-                            } else {
-                                invalidInput.focus();
-                            }
-                        }
-                        return;
-                    }
-                    
-const phoneInput = document.getElementById('phone');
-                    const phoneRegex = /^09\d{8}$/;
-                    if (phoneInput.value && !phoneRegex.test(phoneInput.value)) {
-                        toast.show('手機號碼格式錯誤，請輸入 09 開頭的 10 碼數字', 'error');
-                        phoneInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                        phoneInput.focus();
-                        return;
-                    }
+if (!form.checkValidity()) {
+    const invalidInputs = Array.from(form.querySelectorAll(':invalid'));
 
-if (ownerIdInput.value && !idRegex.test(ownerIdInput.value)) {
-                        toast.show('身分證字號格式錯誤，請輸入 1 碼大寫字母 + 9 碼數字', 'error');
-                        ownerIdInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                        ownerIdInput.focus();
-                        return;
-                    }
+    invalidInputs.forEach(input => {
+        let fieldName = "必填欄位";
+        const nameMap = {
+            'phone': '手機號碼',
+            'ownerName': '飼主姓名',
+            'ownerId': '身分證字號',
+            'email': '電子信箱',
+            'address': '通訊地址',
+            'emergencyName': '緊急聯絡人',
+            'emergencyPhone': '緊急電話',
+            'petSpecies': '寵物種類',
+            'petName': '寵物名字',
+            'breed': '寵物品種',
+            'weight': '體重',
+            'ageYear': '年齡',
+            'gender': '性別',
+            'ligation': '結紮狀況',
+            'medicalHistory': '過往病史',
+            'socialAggression': '社交狀況-對人反應',
+            'socialInteraction': '社交狀況-對狗反應',
+            'temperament': '攻擊性評估',
+            'chipStatus': '晶片狀況',
+            'paymentMethod': '支付方式',
+            'agreement': '契約條款勾選',
+            'basePrice': '基礎報價',
+            'chipId': '晶片號碼',
+        };
 
-                    // --- 緊急聯絡電話格式驗證 ---
-                    const emergencyPhoneInput = document.getElementById('emergencyPhone');
-                    if (emergencyPhoneInput.value && !phoneRegex.test(emergencyPhoneInput.value)) {
-                        toast.show('緊急聯絡電話格式錯誤，請輸入 09 開頭的 10 碼數字', 'error');
-                        emergencyPhoneInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                        emergencyPhoneInput.focus();
-                        return;
-                    }
+        if (nameMap[input.name]) {
+            fieldName = nameMap[input.name];
+        } else {
+            const container = input.closest('.space-y-1') || input.closest('.space-y-2');
+            if (container) {
+                const label = container.querySelector('label:not(.option-card)');
+                if (label) fieldName = label.innerText.replace('*', '').trim();
+            } else if (input.placeholder) {
+                fieldName = input.placeholder;
+            }
+        }
 
-                    const chipStatus = document.querySelector('input[name="chipStatus"]:checked');
-                    const chipInput = document.getElementById('chip-input');
-                    if (chipStatus && chipStatus.value === '有晶片' && chipInput.value) {
-                        const chipRegex = /^\d{10}$|^\d{15}$/;
-                        if (!chipRegex.test(chipInput.value)) {
-                            toast.show('晶片號碼格式錯誤，請輸入 10 或 15 碼數字', 'error');
-                            chipInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                            chipInput.focus();
-                            return;
-                        }
-                    }
+        this.showFieldError(input, `請填寫「${fieldName}」`);
+    });
 
-                    const basePriceInput = document.getElementById('basePrice');
-                    if (!basePriceInput.value || parseInt(basePriceInput.value) <= 0) {
-                        toast.show('請填寫基礎報價金額', 'error');
-                        basePriceInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                        basePriceInput.focus();
-                        return;
-                    }
+    const firstInvalid = invalidInputs[0];
+    if (firstInvalid) {
+        toast.show(`請檢查表單，有 ${invalidInputs.length} 個欄位未填寫`, 'error', '資料不完整');
+        firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        firstInvalid.focus();
+    }
+    return;
+}
+    const phoneInput = document.getElementById('phone');
+    const phoneRegex = /^09\d{8}$/;
+    if (phoneInput.value && !phoneRegex.test(phoneInput.value)) {
+        toast.show('手機號碼格式錯誤，請輸入 09 開頭的 10 碼數字', 'error');
+        this.showFieldError(phoneInput, '手機號碼格式錯誤，請輸入 09 開頭 10 碼');
+        phoneInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        phoneInput.focus();
+        return;
+    }
 
-                    if (!this.state.lineConfirmed) {
-                        toast.show('請先加入 LINE 並傳送貼圖，我們才能聯繫您喔！', 'warning', '步驟未完成');
-                        document.getElementById('view-grooming').scrollIntoView({ behavior: 'smooth' });
-                        return;
-                    }
-                    
-                    const mattingCheckbox = document.querySelector('input[name="mattingSuspected"]');
-                    if (mattingCheckbox && mattingCheckbox.checked) {
-                        const mattingChoice = document.querySelector('input[name="mattingChoice"]:checked');
-                        if (!mattingChoice) {
-                            toast.show('您勾選了「疑似有打結」，請往下滑選擇一種處理方案。', 'warning');
-                            document.getElementById('matting-details').scrollIntoView({ behavior: 'smooth', block: 'center' });
-                            return;
-                        }
-                    }
+    // ====== 修正：身分證驗證 bug ======
+    const ownerIdInput = document.getElementById('ownerId');
+    const idRegex = /^[A-Z][12]\d{8}$/;
+    if (ownerIdInput.value && !idRegex.test(ownerIdInput.value)) {
+        toast.show('身分證字號格式錯誤，請輸入 1 碼大寫字母 + 9 碼數字', 'error');
+        this.showFieldError(ownerIdInput, '身分證格式錯誤');
+        ownerIdInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        ownerIdInput.focus();
+        return;
+    }
 
-                    const riskBanner = document.getElementById('risk-warning-banner');
-                    if (!riskBanner.classList.contains('hidden')) {
-                        const riskInput = document.getElementById('risk-checkbox');
-                        if (!riskInput.checked) {
-                            toast.show('請勾選「同意承擔高風險服務責任」才能繼續', 'error');
-                            const container = document.getElementById('risk-checkbox-container');
-                            container.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                            container.classList.add('animate-pulse');
-                            setTimeout(() => container.classList.remove('animate-pulse'), 500);
-                            return;
-                        }
-                    }
+    // --- 緊急聯絡電話格式驗證 ---
+    const emergencyPhoneInput = document.getElementById('emergencyPhone');
+    if (emergencyPhoneInput.value && !phoneRegex.test(emergencyPhoneInput.value)) {
+        toast.show('緊急聯絡電話格式錯誤，請輸入 09 開頭的 10 碼數字', 'error');
+        this.showFieldError(emergencyPhoneInput, '緊急電話格式錯誤');
+        emergencyPhoneInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        emergencyPhoneInput.focus();
+        return;
+    }
 
-                    if(document.getElementById('signatureData').value === '') {
-                        toast.show('請點擊簽名板進行簽署', 'error');
-                        document.getElementById('signature-trigger').scrollIntoView({ behavior: 'smooth', block: 'center' });
-                        return;
-                    }
+    const chipStatus = document.querySelector('input[name="chipStatus"]:checked');
+    const chipInput = document.getElementById('chip-input');
+    if (chipStatus && chipStatus.value === '有晶片' && chipInput.value) {
+        const chipRegex = /^\d{10}$|^\d{15}$/;
+        if (!chipRegex.test(chipInput.value)) {
+            toast.show('晶片號碼格式錯誤，請輸入 10 或 15 碼數字', 'error');
+            this.showFieldError(chipInput, '晶片號碼格式錯誤');
+            chipInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            chipInput.focus();
+            return;
+        }
+    }
 
-                    toast.show('正在上傳預約資料，請稍候...', 'warning', '處理中');
-                    const submitBtn = document.querySelector('button[type="submit"]');
-                    submitBtn.disabled = true;
-                    submitBtn.innerText = '上傳中...';
+    const basePriceInput = document.getElementById('basePrice');
+    if (!basePriceInput.value || parseInt(basePriceInput.value) <= 0) {
+        toast.show('請填寫基礎報價金額', 'error');
+        this.showFieldError(basePriceInput, '請填寫基礎報價');
+        basePriceInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        basePriceInput.focus();
+        return;
+    }
 
-                    const signatureBase64 = document.getElementById('signatureData').value;
-                    let signatureUrl = '';
+    if (!this.state.lineConfirmed) {
+        toast.show('請先加入 LINE 並傳送貼圖，我們才能聯繫您喔！', 'warning', '步驟未完成');
+        document.getElementById('view-grooming').scrollIntoView({ behavior: 'smooth' });
+        return;
+    }
+    
+    const mattingCheckbox = document.querySelector('input[name="mattingSuspected"]');
+    if (mattingCheckbox && mattingCheckbox.checked) {
+        const mattingChoice = document.querySelector('input[name="mattingChoice"]:checked');
+        if (!mattingChoice) {
+            toast.show('您勾選了「疑似有打結」，請往下滑選擇一種處理方案。', 'warning');
+            const anyMattingInput = document.querySelector('input[name="mattingChoice"]');
+            this.showFieldError(anyMattingInput, '請選擇打結處理方案');
+            document.getElementById('matting-details').scrollIntoView({ behavior: 'smooth', block: 'center' });
+            return;
+        }
+    }
 
-                    try {
-                        const fetchResponse = await fetch(signatureBase64);
-                        const blob = await fetchResponse.blob();
-                        const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.png`;
+    const riskBanner = document.getElementById('risk-warning-banner');
+    if (!riskBanner.classList.contains('hidden')) {
+        const riskInput = document.getElementById('risk-checkbox');
+        if (!riskInput.checked) {
+            toast.show('請勾選「同意承擔高風險服務責任」才能繼續', 'error');
+            this.showFieldError(riskInput, '請勾選同意高風險責任');
+            const container = document.getElementById('risk-checkbox-container');
+            container.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            container.classList.add('animate-pulse');
+            setTimeout(() => container.classList.remove('animate-pulse'), 500);
+            return;
+        }
+    }
 
-                        const { data: uploadData, error: uploadError } = await window.supabaseClient.storage
-                            .from('signatures')
-                            .upload(fileName, blob, {
-                                cacheControl: '3600',
-                                upsert: false
-                            });
+    if(document.getElementById('signatureData').value === '') {
+        toast.show('請點擊簽名板進行簽署', 'error');
+        const sigTrigger = document.getElementById('signature-trigger');
+        this.showBoxError(sigTrigger, '請點擊簽名板進行簽署');
+        sigTrigger.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return;
+    }
 
-                        if (uploadError) {
-                            throw uploadError;
-                        }
+    toast.show('正在上傳預約資料，請稍候...', 'warning', '處理中');
+    const submitBtn = document.querySelector('button[type="submit"]');
+    submitBtn.disabled = true;
+    submitBtn.innerText = '上傳中...';
 
-                        const { data: urlData } = window.supabaseClient.storage
-                            .from('signatures')
-                            .getPublicUrl(fileName);
-                        
-                        signatureUrl = urlData.publicUrl;
+    const signatureBase64 = document.getElementById('signatureData').value;
+    let signatureUrl = '';
 
-                    } catch (error) {
-                        console.error('簽名上傳失敗:', error);
-                        toast.show('簽名上傳失敗，請稍後再試', 'error');
-                        submitBtn.disabled = false;
-                        submitBtn.innerHTML = '<i data-lucide="send" class="w-4 h-4"></i> 確認送出預約';
-                        lucide.createIcons();
-                        return;
-                    }
+    try {
+        const fetchResponse = await fetch(signatureBase64);
+        const blob = await fetchResponse.blob();
+        const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.png`;
 
-                    const formData = {
-                        line_confirmed: this.state.lineConfirmed,
-                        // --- 飼主基本資料 ---
-                        owner_name: document.getElementById('ownerName').value,
-                        owner_phone: document.getElementById('phone').value,
-                        owner_id: document.getElementById('ownerId').value,
-                        email: document.getElementById('email').value,
-                        address: document.getElementById('address').value,
-                        
-                        // --- 緊急聯絡人 ---
-                        emergency_name: document.getElementById('emergencyName').value,
-                        emergency_phone: document.getElementById('emergencyPhone').value,
-                        
-                        // --- 預約偏好 ---
-                        preferred_clinic: document.getElementById('preferredClinic').value,
-                        
-                        // --- 寵物基本資料 ---
-                        pet_name: document.getElementById('petName').value,
-                        pet_species: document.querySelector('input[name="petSpecies"]:checked').value,
-                        breed: document.getElementById('breed').value,
-                        weight: parseFloat(document.getElementById('weight').value),
-                        age: parseInt(document.getElementById('ageYear').value),
-                        gender: document.querySelector('input[name="gender"]:checked').value,
-                        ligation: document.querySelector('input[name="ligation"]:checked').value,
-                        
-                        // --- 健康與行為 ---
-                        medical_history: document.querySelector('input[name="medicalHistory"]:checked').value,
-                        medical_detail: document.getElementById('medical-input').value, // 備註細節
-                        
-                        social_aggression: document.querySelector('input[name="socialAggression"]:checked').value,
-                        social_interaction: document.querySelector('input[name="socialInteraction"]:checked').value,
-                        temperament: document.querySelector('input[name="temperament"]:checked').value,
-                        
-// --- 晶片資訊 ---
-                        chip_status: document.querySelector('input[name="chipStatus"]:checked').value,
-                        chip_id: document.getElementById('chip-input').value,
-                        
-// --- 服務與金額 (修改區：主服務 + 加點項目) ---
-                        service_type: (() => {
-                            // 1. 抓取主服務 (二選一)
-                            const mainEl = document.querySelector('input[name="mainService"]:checked');
-                            let result = mainEl ? mainEl.value : '';
+        const { data: uploadData, error: uploadError } = await window.supabaseClient.storage
+            .from('signatures')
+            .upload(fileName, blob, {
+                cacheControl: '3600',
+                upsert: false
+            });
 
-                            // 2. 抓取加點項目
-                            const isOtherChecked = document.getElementById('otherServiceAddon').checked;
-                            if (isOtherChecked) {
-                                const detail = document.getElementById('otherServiceDetail').value;
-                                // 如果有選主服務，就用 " + " 連接，否則直接顯示其他項目
-                                const prefix = result ? ' + ' : ''; 
-                                result += `${prefix}其他項目${detail ? `(${detail})` : ''}`;
-                            }
-                            
-                            return result || '未選擇';
-                        })(),
+        if (uploadError) {
+            throw uploadError;
+        }
 
-                        base_price: parseInt(document.getElementById('basePrice').value), // 基礎報價
-                        
-                        // --- 修改：升級加價 (直接紀錄區間字串) ---
-                        upgrade_price: (() => {
-                            let prices = [];
-                            document.querySelectorAll('input[name="spaUpgrades"]:checked').forEach(cb => {
-                                // 取出原始價格字串 (例如 "+399" 或 "+399~599")
-                                let priceStr = cb.dataset.price; 
-                                // 移除前綴的 "+" 號
-                                prices.push(priceStr.replace('+', ''));
-                            });
-                            // 將所有價格用逗號串接 (例如 "399, 399~599, 50")
-                            return prices.join(', ');
-                        })(), 
-                        
-                        // --- 修改：預估總金額 (直接紀錄區間字串) ---
-                        total_price: (() => {
-                            const base = parseInt(document.getElementById('basePrice').value) || 0;
-                            let ranges = [];
-                            
-                            document.querySelectorAll('input[name="spaUpgrades"]:checked').forEach(cb => {
-                                let priceStr = cb.dataset.price.replace('+', '').trim();
-                                // 如果有區間，直接加入陣列
-                                if (priceStr.includes('~')) {
-                                    ranges.push(priceStr);
-                                } else {
-                                    // 如果是固定價，轉成數字
-                                    let val = parseInt(priceStr);
-                                    if (!isNaN(val)) ranges.push(val);
-                                }
-                            });
-                            // 計算最小總額與最大總額
-                            let minTotal = base;
-                            let maxTotal = base;
-                            
-                            ranges.forEach(r => {
-                                if (typeof r === 'string') {
-                                    // 處理區間字串 "399~599"
-                                    let parts = r.split('~').map(p => parseInt(p));
-                                    if (!isNaN(parts[0])) minTotal += parts[0];
-                                    if (!isNaN(parts[1])) maxTotal += parts[1];
-                                } else {
-                                    // 處理固定數字
-                                    minTotal += r;
-                                    maxTotal += r;
-                                }
-                            });
-                            // 如果最小最大相等，回傳單一數字，否則回傳區間字串
-                            return minTotal === maxTotal ? minTotal : `${minTotal}~${maxTotal}`;
-                        })(),
-                        
-                        // --- 金額計算結束 ---
-                        payment_method: document.querySelector('input[name="paymentMethod"]:checked').value,
-                                                
-                        // --- 升級項目清單 (文字記錄) ---
-                        spa_upgrades: Array.from(document.querySelectorAll('input[name="spaUpgrades"]:checked')).map(cb => cb.value).join(', '),
-                        
-                        // --- 打結處理 ---
-                        matting_suspected: mattingCheckbox ? mattingCheckbox.checked : false,
-                        matting_choice: mattingCheckbox && mattingCheckbox.checked ? (document.querySelector('input[name="mattingChoice"]:checked')?.value || '') : '',
-                        
-                        // --- 簽名與狀態 ---
-                        signature_data: signatureUrl,
-                        status: 'pending'
-                    };
+        const { data: urlData } = window.supabaseClient.storage
+            .from('signatures')
+            .getPublicUrl(fileName);
+        
+        signatureUrl = urlData.publicUrl;
 
-                    const spaCheckboxes = document.querySelectorAll('input[name="spaUpgrades"]:checked');
-                    const spaList = Array.from(spaCheckboxes).map(cb => cb.value);
-                    formData.spa_upgrades = spaList.join(', ');
+    } catch (error) {
+        console.error('簽名上傳失敗:', error);
+        toast.show('簽名上傳失敗，請稍後再試', 'error');
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i data-lucide="send" class="w-4 h-4"></i> 確認送出預約';
+        lucide.createIcons();
+        return;
+    }
 
-                    formData.matting_suspected = mattingCheckbox ? mattingCheckbox.checked : false;
-                    if (formData.matting_suspected) {
-                        const mattingChoice = document.querySelector('input[name="mattingChoice"]:checked');
-                        formData.matting_choice = mattingChoice ? mattingChoice.value : '';
-                    }
+    const formData = {
+        line_confirmed: this.state.lineConfirmed,
+        // --- 飼主基本資料 ---
+        owner_name: document.getElementById('ownerName').value,
+        owner_phone: document.getElementById('phone').value,
+        owner_id: document.getElementById('ownerId').value,
+        email: document.getElementById('email').value,
+        address: document.getElementById('address').value,
+        
+        // --- 緊急聯絡人 ---
+        emergency_name: document.getElementById('emergencyName').value,
+        emergency_phone: document.getElementById('emergencyPhone').value,
+        
+        // --- 預約偏好 ---
+        preferred_clinic: document.getElementById('preferredClinic').value,
+        
+        // --- 寵物基本資料 ---
+        pet_name: document.getElementById('petName').value,
+        pet_species: document.querySelector('input[name="petSpecies"]:checked').value,
+        breed: document.getElementById('breed').value,
+        weight: parseFloat(document.getElementById('weight').value),
+        age: parseInt(document.getElementById('ageYear').value),
+        gender: document.querySelector('input[name="gender"]:checked').value,
+        ligation: document.querySelector('input[name="ligation"]:checked').value,
+        
+        // --- 健康與行為 ---
+        medical_history: document.querySelector('input[name="medicalHistory"]:checked').value,
+        medical_detail: document.getElementById('medical-input').value,
+        
+        social_aggression: document.querySelector('input[name="socialAggression"]:checked').value,
+        social_interaction: document.querySelector('input[name="socialInteraction"]:checked').value,
+        temperament: document.querySelector('input[name="temperament"]:checked').value,
+        
+        // --- 晶片資訊 ---
+        chip_status: document.querySelector('input[name="chipStatus"]:checked').value,
+        chip_id: document.getElementById('chip-input').value,
+        
+        // --- 服務與金額 (主服務 + 加點項目) ---
+        service_type: (() => {
+            const mainEl = document.querySelector('input[name="mainService"]:checked');
+            let result = mainEl ? mainEl.value : '';
+            const isOtherChecked = document.getElementById('otherServiceAddon').checked;
+            if (isOtherChecked) {
+                const detail = document.getElementById('otherServiceDetail').value;
+                const prefix = result ? ' + ' : ''; 
+                result += `${prefix}其他項目${detail ? `(${detail})` : ''}`;
+            }
+            return result || '未選擇';
+        })(),
 
-                    const { data, error } = await window.supabaseClient
-                        .from('bookings')
-                        .insert([formData])
-                        .select();
+        base_price: parseInt(document.getElementById('basePrice').value),
+        
+        upgrade_price: (() => {
+            let prices = [];
+            document.querySelectorAll('input[name="spaUpgrades"]:checked').forEach(cb => {
+                let priceStr = cb.dataset.price; 
+                prices.push(priceStr.replace('+', ''));
+            });
+            return prices.join(', ');
+        })(), 
+        
+        total_price: (() => {
+            const base = parseInt(document.getElementById('basePrice').value) || 0;
+            let ranges = [];
+            document.querySelectorAll('input[name="spaUpgrades"]:checked').forEach(cb => {
+                let priceStr = cb.dataset.price.replace('+', '').trim();
+                if (priceStr.includes('~')) {
+                    ranges.push(priceStr);
+                } else {
+                    let val = parseInt(priceStr);
+                    if (!isNaN(val)) ranges.push(val);
+                }
+            });
+            let minTotal = base;
+            let maxTotal = base;
+            ranges.forEach(r => {
+                if (typeof r === 'string') {
+                    let parts = r.split('~').map(p => parseInt(p));
+                    if (!isNaN(parts[0])) minTotal += parts[0];
+                    if (!isNaN(parts[1])) maxTotal += parts[1];
+                } else {
+                    minTotal += r;
+                    maxTotal += r;
+                }
+            });
+            return minTotal === maxTotal ? minTotal : `${minTotal}~${maxTotal}`;
+        })(),
+        
+        payment_method: document.querySelector('input[name="paymentMethod"]:checked').value,
+        spa_upgrades: Array.from(document.querySelectorAll('input[name="spaUpgrades"]:checked')).map(cb => cb.value).join(', '),
+        
+        matting_suspected: mattingCheckbox ? mattingCheckbox.checked : false,
+        matting_choice: mattingCheckbox && mattingCheckbox.checked ? (document.querySelector('input[name="mattingChoice"]:checked')?.value || '') : '',
+        
+        signature_data: signatureUrl,
+        status: 'pending'
+    };
 
-                    if (error) {
-                        console.error('Supabase Error:', error);
-                        toast.show('上傳失敗，請稍後再試或聯繫店家', 'error');
-                        submitBtn.disabled = false;
-                        submitBtn.innerHTML = '<i data-lucide="send" class="w-4 h-4"></i> 確認送出預約';
-} else {
-                        // 1. 判斷是否有填寫 Email
-                        const emailInput = document.getElementById('email').value.trim();
-                        const hasEmail = emailInput !== '';
+    const spaCheckboxes = document.querySelectorAll('input[name="spaUpgrades"]:checked');
+    const spaList = Array.from(spaCheckboxes).map(cb => cb.value);
+    formData.spa_upgrades = spaList.join(', ');
 
-                        // 2. 如果有 Email，觸發寄信
-                        if (hasEmail) {
-                            window.supabaseClient.functions.invoke('send-mail', {
-                                body: { 
-                                    email: formData.email,
-                                    owner_name: formData.owner_name,
-                                    pet_name: formData.pet_name,
-                                    htmlContent: this.generateEmailHTML(formData) 
-                                }
-                            }).then(({ error }) => {
-                                if (error) console.error('Email 發送失敗:', error);
-                            });
-                        }
+    formData.matting_suspected = mattingCheckbox ? mattingCheckbox.checked : false;
+    if (formData.matting_suspected) {
+        const mattingChoice = document.querySelector('input[name="mattingChoice"]:checked');
+        formData.matting_choice = mattingChoice ? mattingChoice.value : '';
+    }
 
-                        toast.show('預約成功！準備跳轉...', 'success');
+    const { data, error } = await window.supabaseClient
+        .from('bookings')
+        .insert([formData])
+        .select();
 
-                        // 3. 延遲一下讓 Toast 顯示，然後跳轉到下載/截圖頁面
-                        setTimeout(() => {
-                            // 清除表單狀態，避免按返回鍵看到舊資料
-                            form.reset();
-                            this.state.lineConfirmed = false;
-                            document.getElementById('sig-image').src = '';
-                            document.getElementById('signature-result').classList.add('hidden');
-                            document.getElementById('signature-trigger').classList.remove('hidden');
-                            this.toggleLineCheck();
-                            
-                            // 恢復按鈕
-                            submitBtn.disabled = false;
-                            submitBtn.innerHTML = '<i data-lucide="send" class="w-4 h-4"></i> 確認送出預約';
+    if (error) {
+        console.error('Supabase Error:', error);
+        toast.show('上傳失敗，請稍後再試或聯繫店家', 'error');
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i data-lucide="send" class="w-4 h-4"></i> 確認送出預約';
+    } else {
+        const emailInput = document.getElementById('email').value.trim();
+        const hasEmail = emailInput !== '';
 
-                            // ★ 關鍵：呼叫顯示結果頁面
-                            this.showDownloadPage(formData, hasEmail);
-                            
-                        }, 1000);
-                    }
-                },
-// --- 修改：產生合約 HTML (供截圖與 Email 使用) ---
+        if (hasEmail) {
+            window.supabaseClient.functions.invoke('send-mail', {
+                body: { 
+                    email: formData.email,
+                    owner_name: formData.owner_name,
+                    pet_name: formData.pet_name,
+                    htmlContent: this.generateEmailHTML(formData) 
+                }
+            }).then(({ error }) => {
+                if (error) console.error('Email 發送失敗:', error);
+            });
+        }
+
+        toast.show('預約成功！準備跳轉...', 'success');
+
+        setTimeout(() => {
+            form.reset();
+            this.state.lineConfirmed = false;
+            document.getElementById('sig-image').src = '';
+            document.getElementById('signature-result').classList.add('hidden');
+            document.getElementById('signature-trigger').classList.remove('hidden');
+            this.toggleLineCheck();
+            
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i data-lucide="send" class="w-4 h-4"></i> 確認送出預約';
+
+            this.showDownloadPage(formData, hasEmail);
+            
+        }, 1000);
+    }
+},
+                // --- 修改：產生合約 HTML (供截圖與 Email 使用) ---
                 generateEmailHTML(data) {
                     const now = new Date().toLocaleString('zh-TW', { hour12: false });
                     
@@ -2487,6 +2587,7 @@ const resizeCanvas = () => {
                         document.getElementById('signature-result').classList.remove('hidden');
                         document.getElementById('sig-image').src = dataUrl;
                         document.getElementById('signatureData').value = dataUrl;
+                        app.clearBoxError(document.getElementById('signature-trigger'));
                         
                         const now = new Date();
                         const timeStr = now.getFullYear() + '/' + 
