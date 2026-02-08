@@ -2157,18 +2157,16 @@ if (!form.checkValidity()) {
         const emailInput = document.getElementById('email').value.trim();
         const hasEmail = emailInput !== '';
 
-        if (hasEmail) {
-            window.supabaseClient.functions.invoke('send-mail', {
-                body: { 
-                    email: formData.email,
-                    owner_name: formData.owner_name,
-                    pet_name: formData.pet_name,
-                    htmlContent: this.generateEmailHTML(formData) 
-                }
-            }).then(({ error }) => {
-                if (error) console.error('Email 發送失敗:', error);
-            });
-        }
+window.supabaseClient.functions.invoke('send-mail', {
+    body: { 
+        email: formData.email,
+        owner_name: formData.owner_name,
+        pet_name: formData.pet_name,
+        htmlContent: this.generateEmailHTML(formData) 
+    }
+}).then(({ error }) => {
+    if (error) console.error('Email 發送失敗:', error);
+});
 
         toast.show('預約成功！準備跳轉...', 'success');
 
