@@ -1032,7 +1032,7 @@
         // PWA 自動更新腳本 (sw.js)
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('sw.js?v=7').then(reg => {
+                navigator.serviceWorker.register('sw.js?v=9').then(reg => {
                     reg.onupdatefound = () => {
                         const installingWorker = reg.installing;
                         installingWorker.onstatechange = () => {
@@ -1144,25 +1144,26 @@
                         { title: "ZOIC炭酸泉", sub: "深層清潔美肌", img: "line_oa_chat_260116_170310_group_7.jpg" }
                     ],
                     
-                    dogSpas: [
-                        { name: '日本 ZOIC 碳酸 SPA', price: '+199' },
-                        { name: '日本頂級 SKIMO 奈米 SPA', price: '+399' },
-                        { name: '義大利魚子醬 SPA', price: '+399' },
-                        { name: '義大利柑橘廢毛SPA', price: '+399' },
-                        { name: '義大利活化抗老百香果SPA', price: '+399' },
-                        { name: '義大利客製化皮膚調理 SPA', price: '+399~599' },
-                        { name: '美國去油護理服務/除廢毛 SPA', price: '+300~500' },
-
-                    ],
+dogSpas: [
+    { name: '日本 ZOIC 碳酸 SPA', price: '+199' },
+    { name: '日本頂級 SKIMO 奈米 SPA', price: '+399' },
+    { name: '義大利魚子醬 SPA', price: '+399' },
+    { name: '義大利柑橘廢毛SPA', price: '+399' },
+    { name: '義大利活化抗老百香果SPA', price: '+399' },
+    { name: '義大利客製化皮膚調理 SPA', price: '+399~599' },
+    { name: '美國去油護理服務/除廢毛 SPA', price: '+300~500' },
+    { name: '刷牙服務', price: '+50' }
+],
                     
-                    catSpas: [
-                        { name: '義大利客製化皮膚調理 SPA', price: '+399' },
-                        { name: '義大利魚子醬 SPA', price: '+399' },
-                        { name: '義大利柑橘/百香果代謝廢毛 SPA', price: '+399' },
-                        { name: '日本 ZOIC 碳酸 SPA', price: '+199' },
-                        { name: '日本頂級 SKIMO 奈米 SPA', price: '+399' },
-                        { name: '美國去油護理服務/除廢毛 SPA', price: '+300~500' },
-                    ]
+catSpas: [
+    { name: '義大利客製化皮膚調理 SPA', price: '+399' },
+    { name: '義大利魚子醬 SPA', price: '+399' },
+    { name: '義大利柑橘/百香果代謝廢毛 SPA', price: '+399' },
+    { name: '日本 ZOIC 碳酸 SPA', price: '+199' },
+    { name: '日本頂級 SKIMO 奈米 SPA', price: '+399' },
+    { name: '美國去油護理服務/除廢毛 SPA', price: '+300~500' },
+    { name: '刷牙服務', price: '+50' }
+]
                 },
 
 // 搜尋 init() { ... } 並替換成這個版本
@@ -1273,42 +1274,47 @@ async loadDynamicPrices() {
                     `).join('');
                 },
 
-                renderSpaList(id, list) {
-                    const container = document.getElementById(id);
-                    
-                    // 1. 先清空容器
-                    container.innerHTML = '';
-                    
-                    // 2. 生成 JS 列表中的項目 (例如: 碳酸 SPA、魚子醬 SPA...)
-                    list.forEach(spa => {
-                        const label = document.createElement('label');
-                        label.className = 'flex items-center justify-between p-3 rounded-xl border border-transparent hover:bg-white/80 bg-white/40 transition-all cursor-pointer';
-                        label.innerHTML = `
-                            <div class="flex items-center gap-3">
-                                <input type="checkbox" name="spaUpgrades" value="${spa.name}" data-price="${spa.price}" onchange="app.calculateTotal()" class="accent-brand-primary">
-                                <span class="text-xs font-bold text-brand-text">${spa.name}</span>
-                            </div>
-                            <span class="text-xs font-bold text-brand-primary">${spa.price}元</span>
-                        `;
-                        container.appendChild(label);
-                    });
+renderSpaList(id, list) {
+    const container = document.getElementById(id);
 
-                    // 3. 手動新增「刷牙服務」區塊 (含提示文字) - 這段永遠會加在最後
-                    const brushLabel = document.createElement('label');
-                    brushLabel.className = 'flex items-start gap-3 p-3 rounded-xl border border-brand-primary/20 bg-white/80 transition-all cursor-pointer group hover:bg-white mt-2';
-                    brushLabel.innerHTML = `
-                        <input type="checkbox" name="spaUpgrades" value="刷牙服務" data-price="+50" onchange="app.calculateTotal()" class="accent-brand-primary mt-1 shrink-0">
-                        <div class="flex-1 space-y-1">
-                            <div class="flex items-center justify-between">
-                                <span class="text-xs font-bold text-brand-text">刷牙服務</span>
-                                <span class="text-xs font-bold text-brand-primary">+50元</span>
-                            </div>
-                            <p class="text-[10px] text-brand-light leading-tight">請自備牙刷、牙膏，若忘記攜帶可以店內購買。</p>
-                        </div>
-                    `;
-                    container.appendChild(brushLabel);
-                },
+    // 1. 先清空容器
+    container.innerHTML = '';
 
+    // 2. 生成資料庫中的項目
+    list.forEach(spa => {
+        const isBrush = spa.name === '刷牙服務';
+
+        if (isBrush) {
+            // 刷牙服務 (特殊卡片，含提示文字)
+            const brushLabel = document.createElement('label');
+            brushLabel.className = 'flex items-start gap-3 p-3 rounded-xl border border-brand-primary/20 bg-white/80 transition-all cursor-pointer group hover:bg-white mt-2';
+            brushLabel.innerHTML = `
+                <input type="checkbox" name="spaUpgrades" value="${spa.name}" data-price="${spa.price}" onchange="app.calculateTotal()" class="accent-brand-primary mt-1 shrink-0">
+                <div class="flex-1 space-y-1">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-brand-text">${spa.name}</span>
+                        <span class="text-xs font-bold text-brand-primary">${spa.price}元</span>
+                    </div>
+                    <p class="text-[10px] text-brand-light leading-tight">請自備牙刷、牙膏，若忘記攜帶可以店內購買。</p>
+                </div>
+            `;
+            container.appendChild(brushLabel);
+
+        } else {
+            // 一般 SPA 項目
+            const label = document.createElement('label');
+            label.className = 'flex items-center justify-between p-3 rounded-xl border border-transparent hover:bg-white/80 bg-white/40 transition-all cursor-pointer';
+            label.innerHTML = `
+                <div class="flex items-center gap-3">
+                    <input type="checkbox" name="spaUpgrades" value="${spa.name}" data-price="${spa.price}" onchange="app.calculateTotal()" class="accent-brand-primary">
+                    <span class="text-xs font-bold text-brand-text">${spa.name}</span>
+                </div>
+                <span class="text-xs font-bold text-brand-primary">${spa.price}元</span>
+            `;
+            container.appendChild(label);
+        }
+    });
+},
 
 // 搜尋 switchView(viewName) 並替換成這個版本
 switchView(viewName, updateHistory = true) { // 多了 updateHistory 參數
