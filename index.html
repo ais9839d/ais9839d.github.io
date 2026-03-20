@@ -1032,7 +1032,7 @@
         // PWA 自動更新腳本 (sw.js)
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('sw.js?v=9').then(reg => {
+                navigator.serviceWorker.register('sw.js?v=10').then(reg => {
                     reg.onupdatefound = () => {
                         const installingWorker = reg.installing;
                         installingWorker.onstatechange = () => {
@@ -1277,45 +1277,44 @@ async loadDynamicPrices() {
 renderSpaList(id, list) {
     const container = document.getElementById(id);
 
-    // 1. 先清空容器
+    // 1. 先清空
     container.innerHTML = '';
 
-    // 2. 生成資料庫中的項目
-    list.forEach(spa => {
-        const isBrush = spa.name === '刷牙服務';
+    // 2. 找出刷牙項目
+    const brushItem = list.find(i => i.name === '刷牙服務');
+    const normalItems = list.filter(i => i.name !== '刷牙服務');
 
-        if (isBrush) {
-            // 刷牙服務 (特殊卡片，含提示文字)
-            const brushLabel = document.createElement('label');
-            brushLabel.className = 'flex items-start gap-3 p-3 rounded-xl border border-brand-primary/20 bg-white/80 transition-all cursor-pointer group hover:bg-white mt-2';
-            brushLabel.innerHTML = `
-                <input type="checkbox" name="spaUpgrades" value="${spa.name}" data-price="${spa.price}" onchange="app.calculateTotal()" class="accent-brand-primary mt-1 shrink-0">
-                <div class="flex-1 space-y-1">
-                    <div class="flex items-center justify-between">
-                        <span class="text-xs font-bold text-brand-text">${spa.name}</span>
-                        <span class="text-xs font-bold text-brand-primary">${spa.price}元</span>
-                    </div>
-                    <p class="text-[10px] text-brand-light leading-tight">請自備牙刷、牙膏，若忘記攜帶可以店內購買。</p>
-                </div>
-            `;
-            container.appendChild(brushLabel);
-
-        } else {
-            // 一般 SPA 項目
-            const label = document.createElement('label');
-            label.className = 'flex items-center justify-between p-3 rounded-xl border border-transparent hover:bg-white/80 bg-white/40 transition-all cursor-pointer';
-            label.innerHTML = `
-                <div class="flex items-center gap-3">
-                    <input type="checkbox" name="spaUpgrades" value="${spa.name}" data-price="${spa.price}" onchange="app.calculateTotal()" class="accent-brand-primary">
-                    <span class="text-xs font-bold text-brand-text">${spa.name}</span>
-                </div>
-                <span class="text-xs font-bold text-brand-primary">${spa.price}元</span>
-            `;
-            container.appendChild(label);
-        }
+    // 3. 先渲染一般項目
+    normalItems.forEach(spa => {
+        const label = document.createElement('label');
+        label.className = 'flex items-center justify-between p-3 rounded-xl border border-transparent hover:bg-white/80 bg-white/40 transition-all cursor-pointer';
+        label.innerHTML = `
+            <div class="flex items-center gap-3">
+                <input type="checkbox" name="spaUpgrades" value="${spa.name}" data-price="${spa.price}" onchange="app.calculateTotal()" class="accent-brand-primary">
+                <span class="text-xs font-bold text-brand-text">${spa.name}</span>
+            </div>
+            <span class="text-xs font-bold text-brand-primary">${spa.price}元</span>
+        `;
+        container.appendChild(label);
     });
-},
 
+    // 4. 最後渲染刷牙 (特殊樣式)
+    if (brushItem) {
+        const brushLabel = document.createElement('label');
+        brushLabel.className = 'flex items-start gap-3 p-3 rounded-xl border border-brand-primary/20 bg-white/80 transition-all cursor-pointer group hover:bg-white mt-2';
+        brushLabel.innerHTML = `
+            <input type="checkbox" name="spaUpgrades" value="${brushItem.name}" data-price="${brushItem.price}" onchange="app.calculateTotal()" class="accent-brand-primary mt-1 shrink-0">
+            <div class="flex-1 space-y-1">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs font-bold text-brand-text">${brushItem.name}</span>
+                    <span class="text-xs font-bold text-brand-primary">${brushItem.price}元</span>
+                </div>
+                <p class="text-[10px] text-brand-light leading-tight">請自備牙刷、牙膏，若忘記攜帶可以店內購買。</p>
+            </div>
+        `;
+        container.appendChild(brushLabel);
+    }
+},
 // 搜尋 switchView(viewName) 並替換成這個版本
 switchView(viewName, updateHistory = true) { // 多了 updateHistory 參數
     document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
