@@ -361,7 +361,7 @@
     // PWA 自動更新與註冊腳本 (sw-admin.js)
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
-            navigator.serviceWorker.register('sw-admin.js').then(reg => {
+            navigator.serviceWorker.register('sw-admin.js?v=3').then(reg => {
                 reg.onupdatefound = () => {
                     const installingWorker = reg.installing;
                     installingWorker.onstatechange = () => {
@@ -1075,10 +1075,21 @@ async executePriceSave() {
             const updates = {};
             document.querySelectorAll('.edit-mode').forEach(input => {
                 const key = input.dataset.key;
-                if (key) {
-                    let value = input.value;
-                    updates[key] = value;
+                if (!key) return;
+
+                let value = input.value;
+
+                // 如果原本是 boolean 欄位，而且輸入是空字串，就不要送
+                if (typeof currentItem[key] === 'boolean' && value === '') {
+                    return;
                 }
+
+                // 如果原本是數字，轉成 number
+                if (typeof currentItem[key] === 'number' && value !== '') {
+                    value = Number(value);
+                }
+
+                updates[key] = value;
             });
 
             const { error } = await _supabase
