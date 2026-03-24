@@ -471,14 +471,20 @@
                     <div class="grid grid-cols-2 gap-3 bg-brand-bg/50 p-3 rounded-xl border border-brand-primary/10">
                         <div class="space-y-1">
                             <label class="text-xs font-bold text-brand-dark ml-1">緊急聯絡人 *</label>
-                            <input type="text" name="emergencyName" id="emergencyName" class="input-style" placeholder="" required>
+                            <input type="text" name="emergencyName" id="emergencyName" class="input-style" placeholder="例：媽媽" required>
                         </div>
                         <div class="space-y-1">
                             <label class="text-xs font-bold text-brand-dark ml-1">緊急電話 *</label>
 <input type="tel" id="emergencyPhone" name="emergencyPhone"
+       inputmode="numeric"
        pattern="^09\d{8}$"
        minlength="10" maxlength="10"
-       class="input-style" required>
+       class="input-style"
+       placeholder="09xxxxxxxx"
+       title="請輸入 09 開頭 10 碼手機號碼"
+       oninput="this.value=this.value.replace(/[^\d]/g,'')"
+       required>
+
                         </div>
                     </div>
 
@@ -1032,7 +1038,7 @@
         // PWA 自動更新腳本 (sw.js)
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('sw.js?v=10').then(reg => {
+                navigator.serviceWorker.register('sw.js?v=11').then(reg => {
                     reg.onupdatefound = () => {
                         const installingWorker = reg.installing;
                         installingWorker.onstatechange = () => {
@@ -1193,6 +1199,16 @@ document.querySelectorAll('input[required], textarea[required], select[required]
         }
     });
 });
+// ✅ 緊急電話：空白或格式錯誤時顯示提示
+const emergencyPhone = document.getElementById('emergencyPhone');
+if (emergencyPhone) {
+    emergencyPhone.addEventListener('invalid', () => {
+        emergencyPhone.setCustomValidity('請填寫緊急手機電話');
+    });
+    emergencyPhone.addEventListener('input', () => {
+        emergencyPhone.setCustomValidity('');
+    });
+}
 // ====== 即時驗證 + 離開欄位顯示錯誤 ======
 const regexMap = {
     phone: /^09\d{8}$/,
@@ -1866,7 +1882,7 @@ if (!form.checkValidity()) {
             'email': '電子信箱',
             'address': '通訊地址',
             'emergencyName': '緊急聯絡人',
-            'emergencyPhone': '緊急電話',
+            'emergencyPhone': '緊急手機電話',
             'petSpecies': '寵物種類',
             'petName': '寵物名字',
             'breed': '寵物品種',
