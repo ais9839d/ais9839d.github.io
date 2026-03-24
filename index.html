@@ -40,6 +40,13 @@
     <script src="https://unpkg.com/lucide@latest"></script>
 
     <style>
+/* ✅ FB / IG SVG 濾鏡 (柔和、符合整體視覺) */
+        .fb-icon, .ig-icon {
+            width: 20px;
+            height: 20px;
+            filter: saturate(0.9) brightness(0.95) contrast(0.95);
+        }
+
 /* 全域設定 */
         * {
             /* 移除手機點擊時的預設高亮色塊 (最重要!) */
@@ -352,14 +359,14 @@
 <div class="w-full max-w-sm mx-auto pt-4 pb-8">
                 <div class="bg-white/80 backdrop-blur-md rounded-full shadow-lg p-1.5 flex justify-between items-center px-6 border border-white/60">
                     <a href="https://www.facebook.com/p/%E9%BA%A5%E5%85%8B%E8%AB%BE%E5%B0%BC%E6%97%A5%E5%BC%8F%E5%AF%B5%E7%89%A9%E6%B2%99%E9%BE%8D-100092747026399/" target="_blank" rel="noopener noreferrer" class="flex items-center">
-                        <i data-lucide="facebook" class="w-5 h-5 text-brand-light cursor-pointer hover:text-blue-600"></i>
+                        <img src="fb.svg" alt="Facebook" class="fb-icon">
                     </a>
                     <a href="https://line.me/ti/p/@ais9839d" target="_blank" class="bg-white text-[#06C755] border border-[#06C755]/20 px-5 py-2.5 rounded-full flex items-center gap-2 shadow-lg -mt-5 hover:scale-105 transition-transform">
                         <img src="line.png" alt="LINE" class="w-5 h-5 object-contain">
                         <span class="text-xs font-bold">預約諮詢</span>
                     </a>
                     <a href="https://www.instagram.com/ais9839d/" target="_blank" rel="noopener noreferrer" class="flex items-center">
-                        <i data-lucide="instagram" class="w-5 h-5 text-brand-light cursor-pointer hover:text-pink-600"></i>
+                        <img src="ig.svg" alt="Instagram" class="ig-icon">
                     </a>
                 </div>
             </div>
@@ -1038,7 +1045,7 @@
         // PWA 自動更新腳本 (sw.js)
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('sw.js?v=11').then(reg => {
+                navigator.serviceWorker.register('sw.js?v=12').then(reg => {
                     reg.onupdatefound = () => {
                         const installingWorker = reg.installing;
                         installingWorker.onstatechange = () => {
